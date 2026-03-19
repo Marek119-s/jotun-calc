@@ -177,7 +177,7 @@ input[type=range]{accent-color:var(--acc);background:none;border:none;padding:0}
         <div class="upload-zone" id="upload-zone">
           <input type="file" id="file-input" accept="image/*" onchange="handleFile(this.files[0])">
           <div class="icon">🖼️</div>
-          <p>Przeciągnij screenshot lub kliknij</p>
+          <p>Przeciągnij, kliknij lub <strong>Ctrl+V</strong></p>
           <small>PNG / JPG z programu do mieszania</small>
         </div>
         <div id="preview-wrap"><img id="preview-img" src=""></div>
@@ -291,6 +291,23 @@ const zone = document.getElementById('upload-zone');
 zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
 zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
 zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+// Ctrl+V paste from clipboard
+document.addEventListener('paste', e => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      if (file) {
+        zone.classList.add('drag');
+        setTimeout(() => zone.classList.remove('drag'), 300);
+        handleFile(file);
+      }
+      break;
+    }
+  }
+});
 
 async function handleFile(file) {
   if (!file) return;
