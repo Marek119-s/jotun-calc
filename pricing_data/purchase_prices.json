@@ -678,151 +678,181 @@
     "BD-1": {
       "name": "MC TINTER BD-1  1 L",
       "code": "BD-1",
+      "price_eur_per_ltr": 138.76,
       "price_pln_per_ltr": 596.6679999999999
     },
     "BD1": {
       "name": "MC TINTER BD-1  1 L",
       "code": "BD-1",
+      "price_eur_per_ltr": 138.76,
       "price_pln_per_ltr": 596.6679999999999
     },
     "BS-2": {
       "name": "MC TINTER BS-2  1 L",
       "code": "BS-2",
+      "price_eur_per_ltr": 81.83,
       "price_pln_per_ltr": 351.86899999999997
     },
     "BS2": {
       "name": "MC TINTER BS-2  1 L",
       "code": "BS-2",
+      "price_eur_per_ltr": 81.83,
       "price_pln_per_ltr": 351.86899999999997
     },
     "BV-3": {
       "name": "MC TINTER BV-3  1 L",
       "code": "BV-3",
+      "price_eur_per_ltr": 46.14,
       "price_pln_per_ltr": 198.402
     },
     "BV3": {
       "name": "MC TINTER BV-3  1 L",
       "code": "BV-3",
+      "price_eur_per_ltr": 46.14,
       "price_pln_per_ltr": 198.402
     },
     "FS-4": {
       "name": "MC TINTER FS-4  1 L",
       "code": "FS-4",
+      "price_eur_per_ltr": 79.15,
       "price_pln_per_ltr": 340.345
     },
     "FS4": {
       "name": "MC TINTER FS-4  1 L",
       "code": "FS-4",
+      "price_eur_per_ltr": 79.15,
       "price_pln_per_ltr": 340.345
     },
     "GE-7": {
       "name": "MC TINTER GE-7  1 L",
       "code": "GE-7",
+      "price_eur_per_ltr": 208.87,
       "price_pln_per_ltr": 898.141
     },
     "GE7": {
       "name": "MC TINTER GE-7  1 L",
       "code": "GE-7",
+      "price_eur_per_ltr": 208.87,
       "price_pln_per_ltr": 898.141
     },
     "GO-8": {
       "name": "MC TINTER GO-8  1 L",
       "code": "GO-8",
+      "price_eur_per_ltr": 124.66,
       "price_pln_per_ltr": 536.038
     },
     "GO8": {
       "name": "MC TINTER GO-8  1 L",
       "code": "GO-8",
+      "price_eur_per_ltr": 124.66,
       "price_pln_per_ltr": 536.038
     },
     "GS-6": {
       "name": "MC TINTER GS-6  1 L",
       "code": "GS-6",
+      "price_eur_per_ltr": 108.13,
       "price_pln_per_ltr": 464.95899999999995
     },
     "GS6": {
       "name": "MC TINTER GS-6  1 L",
       "code": "GS-6",
+      "price_eur_per_ltr": 108.13,
       "price_pln_per_ltr": 464.95899999999995
     },
     "GV-5": {
       "name": "MC TINTER GV-5  1 L",
       "code": "GV-5",
+      "price_eur_per_ltr": 55.55,
       "price_pln_per_ltr": 238.86499999999998
     },
     "GV5": {
       "name": "MC TINTER GV-5  1 L",
       "code": "GV-5",
+      "price_eur_per_ltr": 55.55,
       "price_pln_per_ltr": 238.86499999999998
     },
     "HT-10": {
       "name": "MC TINTER HT-10  1 L",
       "code": "HT-10",
+      "price_eur_per_ltr": 45.45,
       "price_pln_per_ltr": 195.435
     },
     "HT10": {
       "name": "MC TINTER HT-10  1 L",
       "code": "HT-10",
+      "price_eur_per_ltr": 45.45,
       "price_pln_per_ltr": 195.435
     },
     "OK-11": {
       "name": "MC TINTER OK-11  1 L",
       "code": "OK-11",
+      "price_eur_per_ltr": 40.84,
       "price_pln_per_ltr": 175.612
     },
     "OK11": {
       "name": "MC TINTER OK-11  1 L",
       "code": "OK-11",
+      "price_eur_per_ltr": 40.84,
       "price_pln_per_ltr": 175.612
     },
     "RB-13": {
       "name": "MC TINTER RB-13  1 L",
       "code": "RB-13",
+      "price_eur_per_ltr": 37.63,
       "price_pln_per_ltr": 161.809
     },
     "RB13": {
       "name": "MC TINTER RB-13  1 L",
       "code": "RB-13",
+      "price_eur_per_ltr": 37.63,
       "price_pln_per_ltr": 161.809
     },
     "RE-14": {
       "name": "MC TINTER RE-14  1 L",
       "code": "RE-14",
+      "price_eur_per_ltr": 154.98,
       "price_pln_per_ltr": 666.4139999999999
     },
     "RE14": {
       "name": "MC TINTER RE-14  1 L",
       "code": "RE-14",
+      "price_eur_per_ltr": 154.98,
       "price_pln_per_ltr": 666.4139999999999
     },
     "RS-12": {
       "name": "MC TINTER RS-12  1 L",
       "code": "RS-12",
+      "price_eur_per_ltr": 180.93,
       "price_pln_per_ltr": 777.999
     },
     "RS12": {
       "name": "MC TINTER RS-12  1 L",
       "code": "RS-12",
+      "price_eur_per_ltr": 180.93,
       "price_pln_per_ltr": 777.999
     },
     "SS-15": {
       "name": "MC TINTER SS-15  1 L",
       "code": "SS-15",
+      "price_eur_per_ltr": 40.77,
       "price_pln_per_ltr": 175.311
     },
     "SS15": {
       "name": "MC TINTER SS-15  1 L",
       "code": "SS-15",
+      "price_eur_per_ltr": 40.77,
       "price_pln_per_ltr": 175.311
     },
     "SV-16": {
       "name": "MC TINTER SV-16  1 L",
       "code": "SV-16",
+      "price_eur_per_ltr": 29.39,
       "price_pln_per_ltr": 126.377
     },
     "SV16": {
       "name": "MC TINTER SV-16  1 L",
       "code": "SV-16",
+      "price_eur_per_ltr": 29.39,
       "price_pln_per_ltr": 126.377
     }
   }
