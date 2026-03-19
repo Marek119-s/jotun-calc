@@ -13,58 +13,40 @@ with open(DATA_PATH, encoding="utf-8") as f:
 
 PRODUCTS    = PRICING["products"]
 TINTERS     = PRICING["tinters"]
-ML_PER_UNIT = PRICING["meta"]["tinting_unit_ml"]  # 0.308 ml per unit
+ML_PER_UNIT = 0.308  # ml per Jotun unit
 
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-# ── Sanity limits ─────────────────────────────────────────────────────────────
 UNITS_MIN = 0.1
 UNITS_MAX = 200.0
 
-# ── OCR helpers ───────────────────────────────────────────────────────────────
 
-def fix_ocr_number(s: str) -> str:
-    """Fix common OCR errors — only in the numeric part."""
+def fix_ocr_number(s):
     return s.replace('O','0').replace('o','0').replace('I','1').replace('l','1').replace('B','8')
 
-def validate_formula(raw_formula: list) -> tuple[list, list]:
-    """
-    Validate and clean formula items from OCR.
-    Returns (validated_list, errors_list)
-    """
-    validated = []
-    errors = []
+
+def validate_formula(raw_formula):
+    validated, errors = [], []
     for item in raw_formula:
         code      = str(item.get("code", "")).upper().strip()
         units_raw = str(item.get("units", "")).strip()
-
-        # Fix OCR errors in number only
         units_fixed = fix_ocr_number(units_raw)
-
-        # Parse float
         try:
             units = float(units_fixed)
         except ValueError:
             errors.append(f"{code}{units_raw}: nie można odczytać liczby")
             continue
-
-        # Validate code: exactly 2 uppercase letters
         if not re.match(r'^[A-Z]{2}$', code):
-            errors.append(f"Nieprawidłowy kod pigmentu: '{code}'")
+            errors.append(f"Nieprawidłowy kod: '{code}'")
             continue
-
-        # Sanity check
         if units < UNITS_MIN or units > UNITS_MAX:
             errors.append(f"{code}: wartość {units} poza zakresem {UNITS_MIN}–{UNITS_MAX}")
             continue
-
         validated.append({"code": code, "units": units})
-
     return validated, errors
 
-# ── OCR via GPT-4o ────────────────────────────────────────────────────────────
 
-def ocr_formula(image_b64: str, media_type: str) -> dict:
+def ocr_formula(image_b64, media_type):
     prompt = """You are reading a screenshot from a Jotun paint tinting machine.
 
 The formula column shows entries like: HT003.7 OK011.8 RB040.3 SS068.7
@@ -99,19 +81,20 @@ JSON only:
     raw = re.sub(r'^```json|```$', '', raw, flags=re.MULTILINE).strip()
     return json.loads(raw)
 
-# ── Pricing logic ─────────────────────────────────────────────────────────────
 
-def normalize(s: str) -> str:
+def normalize(s):
     return re.sub(r'[-_]', ' ', s.upper().strip())
 
-def find_product(product_name: str):
+
+def find_product(product_name):
     name_norm = normalize(product_name)
     for key, prod in PRODUCTS.items():
         if normalize(prod["product_name"]) in name_norm or name_norm in normalize(prod["product_name"]):
             return key, prod
     return None, None
 
-def find_base(prod: dict, base_hint: str):
+
+def find_base(prod, base_hint):
     hint_norm = normalize(base_hint)
     hint_up   = base_hint.upper().strip()
     for bkey, bdata in prod.get("bases", {}).items():
@@ -121,6 +104,7 @@ def find_base(prod: dict, base_hint: str):
         if re.match(r'^[A-Z]$', hint_up) and bkey_norm.startswith(hint_up + ' '):
             return bkey, bdata
     return None, None
+
 
 def calculate_price(product_name, base_hint, pack_size, quantity,
                     formula, margin_pct, vat_pct, euro_rate=4.3):
@@ -143,47 +127,42 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
     commercial_vol_l = pack["commercial_vol_l"]
     base_price_pln   = pack["price_pln_per_pack"]
 
-    # Pigments: formula per 1L → scale by commercial_vol_l
-    # Volume calc mirrors Excel: ZAOKR(SUM(units) * 0.308 * vol / 1000, 2)
+    # Pigments
+    # Excel formula: SUMA(jednostki × cena_EUR × kurs) × 0.308 / 1000 × commercial_vol
     pigment_lines     = []
     pigment_total_pln = 0.0
-    pigment_total_l   = 0.0
     total_units_sum   = 0.0
 
     for item in formula:
         code  = item["code"].upper()
         units = float(item["units"])
 
-        tinter = TINTERS.get(code) or TINTERS.get(code.replace('-',''))
+        tinter = TINTERS.get(code) or TINTERS.get(code.replace('-', ''))
         if not tinter:
             for tk, tv in TINTERS.items():
                 if '-' in tk and tk.split('-')[0] == code[:2]:
-                    tinter = tv; break
+                    tinter = tv
+                    break
 
         if not tinter:
-            pigment_lines.append({"code": code, "units": units,
-                                  "error": f"Nieznany pigment: {code}"})
+            pigment_lines.append({"code": code, "units": units, "error": f"Nieznany pigment: {code}"})
             continue
 
         total_units_sum += units
-        # Excel: SUMA(jednostki × cena_EUR × kurs) × 0.308 / 1000 × commercial_vol
-        vol_l    = units * ML_PER_UNIT / 1000 * commercial_vol_l
         cost_pln = units * tinter["price_eur_per_ltr"] * euro_rate * ML_PER_UNIT / 1000 * commercial_vol_l
-
         pigment_total_pln += cost_pln
-        pigment_total_l   += vol_l
-
-    # Excel-style rounding: ZAOKR(sum_units × 0.308 × vol / 1000, 2)
-    pigment_total_l = round(total_units_sum * ML_PER_UNIT * commercial_vol_l / 1000, 2)
 
         pigment_lines.append({
-            "code": tinter["code"], "units": units,
-            "vol_l": round(vol_l, 4),
+            "code": tinter["code"],
+            "units": units,
             "price_eur_per_ltr": tinter["price_eur_per_ltr"],
-            "price_pln_per_ltr": round(tinter["price_eur_per_ltr"] * euro_rate, 4),
             "cost_pln": round(cost_pln, 4)
         })
 
+    # Volume: Excel ZAOKR(sum_units × 0.308 × commercial_vol / 1000, 2)
+    pigment_total_l = round(total_units_sum * ML_PER_UNIT * commercial_vol_l / 1000, 2)
+
+    # Margin on base + pigments together
     total_cost_pln   = base_price_pln + pigment_total_pln
     divisor          = 1 - (margin_pct / 100)
     sell_net_1pack   = total_cost_pln / divisor if divisor > 0 else total_cost_pln
@@ -194,8 +173,7 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
     total_vat   = vat_1pack * quantity
     total_gross = sell_gross_1pack * quantity
 
-    pigment_sell_net = (pigment_total_pln / divisor) * quantity if pigment_total_pln > 0 else 0
-    base_label       = base_key.replace('_BAS','').replace('_BASE','').replace('-BAS','').replace('-BASE','')
+    base_label = base_key.replace('_BAS','').replace('_BASE','').replace('-BAS','').replace('-BASE','')
 
     invoice_lines = [{
         "lp": 1,
@@ -210,15 +188,16 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
     }]
 
     if pigment_total_l > 0:
+        pig_sell_net = (pigment_total_pln / divisor) * quantity
         invoice_lines.append({
             "lp": 2,
             "name": "MULTICOLOR SOLVENT FREE",
             "desc": "  ".join(f"{p['code']} {p['units']}" for p in pigment_lines if 'error' not in p),
             "qty": round(pigment_total_l * quantity, 4),
             "unit": "LT",
-            "unit_price_net": round(pigment_total_pln / pigment_total_l, 2),
-            "value_net": round(pigment_sell_net, 2),
-            "value_gross": round(pigment_sell_net * (1 + vat_pct/100), 2),
+            "unit_price_net": round(pigment_total_pln / pigment_total_l, 2) if pigment_total_l > 0 else 0,
+            "value_net": round(pig_sell_net, 2),
+            "value_gross": round(pig_sell_net * (1 + vat_pct/100), 2),
             "vat_pct": vat_pct
         })
 
@@ -236,7 +215,7 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
             "base_pln": round(base_price_pln, 2),
             "pigment_pln": round(pigment_total_pln, 2),
             "total_pln": round(total_cost_pln, 2),
-            "pigment_vol_l": round(pigment_total_l, 4),
+            "pigment_vol_l": pigment_total_l,
             "pigment_lines": pigment_lines
         },
         "invoice_lines": invoice_lines,
@@ -248,7 +227,6 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
         }
     }
 
-# ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
