@@ -679,17 +679,34 @@ async function runOCR(b64, mediaType) {
   const status = document.getElementById('ocr-status');
   const ocrText = document.getElementById('ocr-text');
   status.style.display = 'flex';
-  ocrText.textContent = 'Analizuję obraz...';
+  status.style.background = 'var(--blue-bg)';
+  status.style.borderColor = 'var(--blue-border)';
+  status.style.color = 'var(--blue)';
+  ocrText.innerHTML = '⏳ Analizuję obraz...';
   try {
     const res = await fetch('/api/ocr', {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({image_b64: b64, media_type: mediaType})
     });
     const data = await res.json();
-    if (data.error) { ocrText.textContent = '⚠ ' + data.error; return; }
-    ocrText.textContent = `${data.product_name} · Baza ${data.base} · ${data.formula.map(f=>f.code+f.units).join(' ')}`;
+    if (data.error) {
+      ocrText.innerHTML = '⚠ ' + data.error;
+      status.style.background = 'var(--red-bg)';
+      status.style.borderColor = '#f0b0a8';
+      status.style.color = 'var(--red)';
+      return;
+    }
+    const formulaStr = data.formula.map(f => `<b>${f.code}</b>${f.units}`).join(' &nbsp;');
+    const errStr = (data.ocr_errors && data.ocr_errors.length)
+      ? `<br><span style="color:var(--red);font-weight:600">⚠ Błędy OCR: ${data.ocr_errors.join(' | ')}</span>`
+      : ' ✓';
+    ocrText.innerHTML = `${data.product_name} · Baza <b>${data.base}</b> · ${formulaStr}${errStr}`;
     autofillFromOCR(data);
-  } catch(e) { ocrText.textContent = '⚠ ' + e.message; }
+  } catch(e) {
+    ocrText.innerHTML = '⚠ ' + e.message;
+    status.style.background = 'var(--red-bg)';
+    status.style.color = 'var(--red)';
+  }
 }
 
 function autofillFromOCR(data) {
