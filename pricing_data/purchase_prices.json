@@ -1,0 +1,829 @@
+{
+  "meta": {
+    "euro_rate": 4.3,
+    "tinting_unit_ml": 0.308,
+    "pack_map": {
+      "0.68": "0.75L",
+      "0.9": "1L",
+      "2.7": "3L",
+      "9.0": "10L"
+    },
+    "formula_basis": "per_1L_base"
+  },
+  "products": {
+    "BENAR_UVR": {
+      "product_name": "BENAR UVR",
+      "bases": {
+        "STANDARD": {
+          "1L": {
+            "base_vol_l": 1.0,
+            "commercial_vol_l": 1.0,
+            "price_pln_per_pack": 75.207,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 3.0,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 272.061,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "JOTUN_TREGRUNNING_KLAR": {
+      "product_name": "JOTUN TREGRUNNING KLAR",
+      "bases": {
+        "STANDARD": {
+          "1L": {
+            "base_vol_l": 0.9,
+            "commercial_vol_l": 1.0,
+            "price_pln_per_pack": 70.047,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 203.777,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 624.403,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "VISIR_OLJEGRUNNING_PIGMENTIERT": {
+      "product_name": "VISIR OLJEGRUNNING PIGMENTIERT",
+      "bases": {
+        "STANDARD": {
+          "1L": {
+            "base_vol_l": 1.0,
+            "commercial_vol_l": 1.0,
+            "price_pln_per_pack": 73.573,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 3.0,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 212.549,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 10.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 647.279,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "JOTAPROFF_TCKANDE_UTEGRUND_VIT": {
+      "product_name": "JOTAPROFF TÄCKANDE UTEGRUND VIT",
+      "bases": {
+        "STANDARD": {
+          "3L": {
+            "base_vol_l": 3.0,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 220.719,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 10.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 672.219,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "TREBITT_HOLZLASUR": {
+      "product_name": "TREBITT HOLZLASUR",
+      "bases": {
+        "Y_BASE": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 57.534,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 207.002,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 589.96,
+            "unit": "szt."
+          }
+        },
+        "C_BASE": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 57.534,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 207.002,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 589.96,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "DEMIDEKK_LASYROLJA": {
+      "product_name": "DEMIDEKK LASYROLJA",
+      "bases": {
+        "Y_BASE": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 41.108,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 146.415,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 437.052,
+            "unit": "szt."
+          }
+        },
+        "C_BASE": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 41.108,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 146.415,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 437.052,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "DEMIDEKK_CLEANTECH": {
+      "product_name": "DEMIDEKK CLEANTECH",
+      "bases": {
+        "A-BAS": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 75.035,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 250.432,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 717.799,
+            "unit": "szt."
+          }
+        },
+        "B-BAS": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 75.035,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 250.432,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 717.799,
+            "unit": "szt."
+          }
+        },
+        "C-BAS": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 75.035,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 250.432,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 717.799,
+            "unit": "szt."
+          }
+        },
+        "VIT_BAS": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 77.572,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 267.933,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 798.553,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "DEMIDEKK_PERFORMANCE": {
+      "product_name": "DEMIDEKK PERFORMANCE",
+      "bases": {
+        "VIT_BAS": {
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 678.755,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "DEMIDEKK_INFINITY_PURE_MATT": {
+      "product_name": "DEMIDEKK INFINITY PURE MATT",
+      "bases": {
+        "A-BAS": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 74.089,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 247.121,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 708.296,
+            "unit": "szt."
+          }
+        },
+        "B-BAS": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 74.089,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 247.121,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 708.296,
+            "unit": "szt."
+          }
+        },
+        "C-BAS": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 74.089,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 247.121,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 708.296,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "DRYGOLIN_OLJEDEKKB": {
+      "product_name": "DRYGOLIN OLJEDEKKB",
+      "bases": {
+        "A-BAS": {
+          "4.5L": {
+            "base_vol_l": 4.5,
+            "commercial_vol_l": 4.5,
+            "price_pln_per_pack": 331.014,
+            "unit": "szt."
+          }
+        },
+        "B-BAS": {
+          "4.5L": {
+            "base_vol_l": 4.5,
+            "commercial_vol_l": 4.5,
+            "price_pln_per_pack": 331.014,
+            "unit": "szt."
+          }
+        },
+        "C-BAS": {
+          "4.5L": {
+            "base_vol_l": 4.5,
+            "commercial_vol_l": 4.5,
+            "price_pln_per_pack": 331.014,
+            "unit": "szt."
+          }
+        },
+        "HVIT": {
+          "4.5L": {
+            "base_vol_l": 4.5,
+            "commercial_vol_l": 4.5,
+            "price_pln_per_pack": 391.171,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "DEMIDEKK_INFINITY_DETAILS": {
+      "product_name": "DEMIDEKK INFINITY DETAILS",
+      "bases": {
+        "A-BAS": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 81.872,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 300.871,
+            "unit": "szt."
+          }
+        },
+        "B-BAS": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 81.872,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 300.871,
+            "unit": "szt."
+          }
+        },
+        "C-BAS": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 81.872,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 300.871,
+            "unit": "szt."
+          }
+        },
+        "HV-BASE": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 81.872,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 309.901,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "JOTUN_KRAFTVASK": {
+      "product_name": "JOTUN KRAFTVASK",
+      "bases": {
+        "STANDARD": {
+          "1L": {
+            "base_vol_l": 1.0,
+            "commercial_vol_l": 1.0,
+            "price_pln_per_pack": 57.405,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "JOTUN_PENSELRENS": {
+      "product_name": "JOTUN PENSELRENS",
+      "bases": {
+        "STANDARD": {
+          "1L": {
+            "base_vol_l": 1.0,
+            "commercial_vol_l": 1.0,
+            "price_pln_per_pack": 47.386,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "DEMIDEKK_TERRASSEFIX": {
+      "product_name": "DEMIDEKK TERRASSEFIX",
+      "bases": {
+        "STANDARD": {
+          "4L": {
+            "base_vol_l": 4.0,
+            "commercial_vol_l": 4.0,
+            "price_pln_per_pack": 116.702,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "JOTUN_TREOLJE_V_KLAR": {
+      "product_name": "JOTUN TREOLJE V KLAR",
+      "bases": {
+        "STANDARD": {
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 93.052,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "DEMIDEKK_TERR_LASYR": {
+      "product_name": "DEMIDEKK TERR LASYR",
+      "bases": {
+        "KLAR_BASE": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 39.603,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 140.782,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 420.282,
+            "unit": "szt."
+          }
+        },
+        "GUL_BASE": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 39.603,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 140.782,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 420.282,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "JOTUN_PANELLAKK": {
+      "product_name": "JOTUN PANELLAKK",
+      "bases": {
+        "KLAR_BASE": {
+          "0.75L": {
+            "base_vol_l": 0.68,
+            "commercial_vol_l": 0.75,
+            "price_pln_per_pack": 43.344,
+            "unit": "szt."
+          },
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 135.88,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "JOTAPROFF_PRIMA_AIR_05": {
+      "product_name": "JOTAPROFF PRIMA AIR 05",
+      "bases": {
+        "A-BAS": {
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 131.537,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 389.838,
+            "unit": "szt."
+          }
+        },
+        "B-BAS": {
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 131.537,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 389.838,
+            "unit": "szt."
+          }
+        },
+        "C-BAS": {
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 131.537,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 389.838,
+            "unit": "szt."
+          }
+        },
+        "HVIT": {
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 132.483,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "JOTUN_KVIST_OG_SPERREGRUNNING": {
+      "product_name": "JOTUN KVIST- OG SPERREGRUNNING",
+      "bases": {
+        "STANDARD": {
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 246.39,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 793.78,
+            "unit": "szt."
+          }
+        }
+      }
+    },
+    "TREBITT_OLJEBEIS_MATT": {
+      "product_name": "TREBITT OLJEBEIS MATT",
+      "bases": {
+        "C-BAS": {
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 200.81,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 572.244,
+            "unit": "szt."
+          }
+        },
+        "GUL_BASE": {
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_pln_per_pack": 200.81,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_pln_per_pack": 572.244,
+            "unit": "szt."
+          }
+        }
+      }
+    }
+  },
+  "tinters": {
+    "BD-1": {
+      "name": "MC TINTER BD-1  1 L",
+      "code": "BD-1",
+      "price_pln_per_ltr": 596.6679999999999
+    },
+    "BD1": {
+      "name": "MC TINTER BD-1  1 L",
+      "code": "BD-1",
+      "price_pln_per_ltr": 596.6679999999999
+    },
+    "BS-2": {
+      "name": "MC TINTER BS-2  1 L",
+      "code": "BS-2",
+      "price_pln_per_ltr": 351.86899999999997
+    },
+    "BS2": {
+      "name": "MC TINTER BS-2  1 L",
+      "code": "BS-2",
+      "price_pln_per_ltr": 351.86899999999997
+    },
+    "BV-3": {
+      "name": "MC TINTER BV-3  1 L",
+      "code": "BV-3",
+      "price_pln_per_ltr": 198.402
+    },
+    "BV3": {
+      "name": "MC TINTER BV-3  1 L",
+      "code": "BV-3",
+      "price_pln_per_ltr": 198.402
+    },
+    "FS-4": {
+      "name": "MC TINTER FS-4  1 L",
+      "code": "FS-4",
+      "price_pln_per_ltr": 340.345
+    },
+    "FS4": {
+      "name": "MC TINTER FS-4  1 L",
+      "code": "FS-4",
+      "price_pln_per_ltr": 340.345
+    },
+    "GE-7": {
+      "name": "MC TINTER GE-7  1 L",
+      "code": "GE-7",
+      "price_pln_per_ltr": 898.141
+    },
+    "GE7": {
+      "name": "MC TINTER GE-7  1 L",
+      "code": "GE-7",
+      "price_pln_per_ltr": 898.141
+    },
+    "GO-8": {
+      "name": "MC TINTER GO-8  1 L",
+      "code": "GO-8",
+      "price_pln_per_ltr": 536.038
+    },
+    "GO8": {
+      "name": "MC TINTER GO-8  1 L",
+      "code": "GO-8",
+      "price_pln_per_ltr": 536.038
+    },
+    "GS-6": {
+      "name": "MC TINTER GS-6  1 L",
+      "code": "GS-6",
+      "price_pln_per_ltr": 464.95899999999995
+    },
+    "GS6": {
+      "name": "MC TINTER GS-6  1 L",
+      "code": "GS-6",
+      "price_pln_per_ltr": 464.95899999999995
+    },
+    "GV-5": {
+      "name": "MC TINTER GV-5  1 L",
+      "code": "GV-5",
+      "price_pln_per_ltr": 238.86499999999998
+    },
+    "GV5": {
+      "name": "MC TINTER GV-5  1 L",
+      "code": "GV-5",
+      "price_pln_per_ltr": 238.86499999999998
+    },
+    "HT-10": {
+      "name": "MC TINTER HT-10  1 L",
+      "code": "HT-10",
+      "price_pln_per_ltr": 195.435
+    },
+    "HT10": {
+      "name": "MC TINTER HT-10  1 L",
+      "code": "HT-10",
+      "price_pln_per_ltr": 195.435
+    },
+    "OK-11": {
+      "name": "MC TINTER OK-11  1 L",
+      "code": "OK-11",
+      "price_pln_per_ltr": 175.612
+    },
+    "OK11": {
+      "name": "MC TINTER OK-11  1 L",
+      "code": "OK-11",
+      "price_pln_per_ltr": 175.612
+    },
+    "RB-13": {
+      "name": "MC TINTER RB-13  1 L",
+      "code": "RB-13",
+      "price_pln_per_ltr": 161.809
+    },
+    "RB13": {
+      "name": "MC TINTER RB-13  1 L",
+      "code": "RB-13",
+      "price_pln_per_ltr": 161.809
+    },
+    "RE-14": {
+      "name": "MC TINTER RE-14  1 L",
+      "code": "RE-14",
+      "price_pln_per_ltr": 666.4139999999999
+    },
+    "RE14": {
+      "name": "MC TINTER RE-14  1 L",
+      "code": "RE-14",
+      "price_pln_per_ltr": 666.4139999999999
+    },
+    "RS-12": {
+      "name": "MC TINTER RS-12  1 L",
+      "code": "RS-12",
+      "price_pln_per_ltr": 777.999
+    },
+    "RS12": {
+      "name": "MC TINTER RS-12  1 L",
+      "code": "RS-12",
+      "price_pln_per_ltr": 777.999
+    },
+    "SS-15": {
+      "name": "MC TINTER SS-15  1 L",
+      "code": "SS-15",
+      "price_pln_per_ltr": 175.311
+    },
+    "SS15": {
+      "name": "MC TINTER SS-15  1 L",
+      "code": "SS-15",
+      "price_pln_per_ltr": 175.311
+    },
+    "SV-16": {
+      "name": "MC TINTER SV-16  1 L",
+      "code": "SV-16",
+      "price_pln_per_ltr": 126.377
+    },
+    "SV16": {
+      "name": "MC TINTER SV-16  1 L",
+      "code": "SV-16",
+      "price_pln_per_ltr": 126.377
+    }
+  }
+}
