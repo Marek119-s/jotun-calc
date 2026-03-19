@@ -143,10 +143,12 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
     commercial_vol_l = pack["commercial_vol_l"]
     base_price_pln   = pack["price_pln_per_pack"]
 
-    # Pigments: formula units × 0.308 ml/unit × base_vol_l (formula is per 1L)
+    # Pigments: formula per 1L → scale by commercial_vol_l
+    # Volume calc mirrors Excel: ZAOKR(SUM(units) * 0.308 * vol / 1000, 2)
     pigment_lines     = []
     pigment_total_pln = 0.0
     pigment_total_l   = 0.0
+    total_units_sum   = 0.0
 
     for item in formula:
         code  = item["code"].upper()
@@ -163,16 +165,22 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
                                   "error": f"Nieznany pigment: {code}"})
             continue
 
-        vol_l    = (units * ML_PER_UNIT / 1000) * base_vol_l
-        cost_pln = vol_l * tinter["price_pln_per_ltr"]
+        total_units_sum += units
+        # Excel: SUMA(jednostki × cena_EUR × kurs) × 0.308 / 1000 × commercial_vol
+        vol_l    = units * ML_PER_UNIT / 1000 * commercial_vol_l
+        cost_pln = units * tinter["price_eur_per_ltr"] * euro_rate * ML_PER_UNIT / 1000 * commercial_vol_l
 
         pigment_total_pln += cost_pln
         pigment_total_l   += vol_l
 
+    # Excel-style rounding: ZAOKR(sum_units × 0.308 × vol / 1000, 2)
+    pigment_total_l = round(total_units_sum * ML_PER_UNIT * commercial_vol_l / 1000, 2)
+
         pigment_lines.append({
             "code": tinter["code"], "units": units,
             "vol_l": round(vol_l, 4),
-            "price_pln_per_ltr": tinter["price_pln_per_ltr"],
+            "price_eur_per_ltr": tinter["price_eur_per_ltr"],
+            "price_pln_per_ltr": round(tinter["price_eur_per_ltr"] * euro_rate, 4),
             "cost_pln": round(cost_pln, 4)
         })
 
