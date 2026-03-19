@@ -84,7 +84,7 @@ def find_base(prod: dict, base_hint: str):
     return None, None
 
 
-def calculate_price(product_name, base_hint, pack_size, quantity, formula, margin_pct, vat_pct):
+def calculate_price(product_name, base_hint, pack_size, quantity, formula, margin_pct, vat_pct, euro_rate=4.3):
     prod_key, prod = find_product(product_name)
     if not prod:
         return {"error": f"Nie znaleziono produktu: {product_name}"}
@@ -159,6 +159,7 @@ def calculate_price(product_name, base_hint, pack_size, quantity, formula, margi
         "quantity": quantity,
         "margin_pct": margin_pct,
         "vat_pct": vat_pct,
+        "euro_rate": euro_rate,
 
         "purchase": {
             "base_pln": round(base_price_pln, 2),
@@ -242,7 +243,8 @@ def api_calculate():
         quantity     = int(body.get("quantity", 1)),
         formula      = body.get("formula", []),
         margin_pct   = float(body.get("margin_pct", 30)),
-        vat_pct      = float(body.get("vat_pct", 23))
+        vat_pct      = float(body.get("vat_pct", 23)),
+        euro_rate    = float(body.get("euro_rate", 4.3))
     )
     if "error" in result:
         return jsonify(result), 400
