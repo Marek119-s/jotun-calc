@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jotun · Kalkulator</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
 :root {
   --bg:#0f0f0f; --s1:#1a1a1a; --s2:#222; --s3:#2a2a2a;
   --border:#2e2e2e; --border2:#3a3a3a;
@@ -16,294 +16,277 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
 
-/* ─ HEADER ─ */
-header{
-  display:flex;align-items:center;gap:12px;
-  padding:18px 32px;border-bottom:1px solid var(--border);
-  background:var(--s1);
-}
+header{display:flex;align-items:center;gap:12px;padding:18px 32px;border-bottom:1px solid var(--border);background:var(--s1)}
 header h1{font-size:17px;font-weight:600;letter-spacing:-.3px}
-header .badge{
-  font-family:'DM Mono',monospace;font-size:10px;
-  background:rgba(232,197,71,.12);color:var(--acc);
-  border:1px solid rgba(232,197,71,.25);border-radius:4px;padding:3px 8px;
-}
+header .badge{font-family:'DM Mono',monospace;font-size:10px;background:rgba(232,197,71,.12);color:var(--acc);border:1px solid rgba(232,197,71,.25);border-radius:4px;padding:3px 8px}
 
-/* ─ LAYOUT ─ */
 .wrap{max-width:1100px;margin:0 auto;padding:28px 24px;display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start}
 
-/* ─ PANEL ─ */
-.panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-.panel-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.panel-head h2{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--t2)}
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.panel:last-child{margin-bottom:0}
+.panel-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.panel-head h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--t2)}
 .panel-body{padding:20px}
 
-/* ─ UPLOAD ZONE ─ */
-.upload-zone{
-  border:2px dashed var(--border2);border-radius:var(--r);
-  padding:32px 20px;text-align:center;cursor:pointer;
-  transition:border-color .2s,background .2s;position:relative;
-  margin-bottom:20px;
-}
+/* Tabs */
+.tabs{display:flex;gap:2px;background:var(--s2);border-radius:6px;padding:3px;margin-bottom:20px}
+.tab{flex:1;padding:8px;text-align:center;font-size:12px;font-weight:600;border-radius:4px;cursor:pointer;color:var(--t2);transition:all .15s;border:none;background:none}
+.tab.active{background:var(--s1);color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+
+/* Upload */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:28px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative;margin-bottom:16px}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--acc);background:rgba(232,197,71,.04)}
 .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.upload-zone .icon{font-size:28px;margin-bottom:8px;opacity:.5}
+.upload-zone .icon{font-size:26px;margin-bottom:6px;opacity:.5}
 .upload-zone p{font-size:13px;color:var(--t2)}
-.upload-zone small{font-size:11px;color:var(--t3);margin-top:4px;display:block}
+.upload-zone small{font-size:11px;color:var(--t3);margin-top:3px;display:block}
 
-#preview-wrap{margin-bottom:16px;display:none}
+#preview-wrap{margin-bottom:14px;display:none}
 #preview-wrap img{width:100%;border-radius:6px;border:1px solid var(--border)}
 
-/* ─ FORM FIELDS ─ */
+.ocr-pill{display:flex;align-items:flex-start;gap:8px;background:rgba(74,158,255,.1);border:1px solid rgba(74,158,255,.2);border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--acc2);line-height:1.5}
+#ocr-status{display:none}
+
+/* Fields */
 .field{margin-bottom:14px}
-label{display:block;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
-input,select{
-  width:100%;background:var(--s2);border:1px solid var(--border);
-  color:var(--t1);padding:9px 12px;border-radius:6px;
-  font-family:inherit;font-size:14px;outline:none;
-  transition:border-color .15s;appearance:none;
-}
+label{display:block;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+input,select{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--t1);padding:9px 12px;border-radius:6px;font-family:inherit;font-size:14px;outline:none;transition:border-color .15s;appearance:none}
 input:focus,select:focus{border-color:var(--acc)}
 select option{background:#1a1a1a}
 
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.row3{display:grid;grid-template-columns:1fr 1fr 80px;gap:10px;align-items:end}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 
-/* OCR result pill */
-.ocr-pill{
-  display:flex;align-items:center;gap:8px;
-  background:rgba(74,158,255,.1);border:1px solid rgba(74,158,255,.2);
-  border-radius:6px;padding:10px 14px;margin-bottom:14px;
-  font-size:12px;color:var(--acc2);
-}
-.ocr-pill .label{font-weight:600;margin-right:4px}
-#ocr-status{display:none}
-
-/* Margin slider */
-.slider-row{display:grid;grid-template-columns:1fr 60px;gap:10px;align-items:center}
-input[type=range]{accent-color:var(--acc);background:none;border:none;padding:0}
-
-/* Formula tags */
-.formula-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:28px}
-.ftag{
-  font-family:'DM Mono',monospace;font-size:11px;
-  background:rgba(74,158,255,.12);border:1px solid rgba(74,158,255,.2);
-  color:var(--acc2);border-radius:4px;padding:3px 8px;
-  display:flex;align-items:center;gap:4px;
-}
-.ftag .rm{cursor:pointer;color:var(--t3);font-size:13px;line-height:1}
+/* Formula */
+.formula-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:24px}
+.ftag{font-family:'DM Mono',monospace;font-size:11px;background:rgba(74,158,255,.12);border:1px solid rgba(74,158,255,.2);color:var(--acc2);border-radius:4px;padding:3px 8px;display:flex;align-items:center;gap:4px}
+.ftag .rm{cursor:pointer;color:var(--t3);font-size:14px;line-height:1}
 .ftag .rm:hover{color:var(--red)}
-
-.add-formula-row{display:grid;grid-template-columns:1fr 80px 36px;gap:6px;align-items:end;margin-bottom:12px}
-.add-formula-row input{font-family:'DM Mono',monospace}
-.icon-btn{
-  width:36px;height:36px;background:var(--s3);border:1px solid var(--border2);
-  border-radius:6px;color:var(--t2);font-size:18px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .15s;
-}
+.add-row{display:grid;grid-template-columns:1fr 80px 36px;gap:6px;align-items:end;margin-bottom:12px}
+.add-row input{font-family:'DM Mono',monospace}
+.icon-btn{width:36px;height:36px;background:var(--s3);border:1px solid var(--border2);border-radius:6px;color:var(--t2);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .icon-btn:hover{border-color:var(--acc);color:var(--acc)}
 
-/* Main CTA */
-.btn-calc{
-  width:100%;padding:13px;background:var(--acc);color:#0f0f0f;
-  border:none;border-radius:var(--r);font-family:inherit;font-size:14px;
-  font-weight:700;cursor:pointer;transition:opacity .15s;margin-top:4px;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+.btn-calc{width:100%;padding:13px;background:var(--acc);color:#0f0f0f;border:none;border-radius:var(--r);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-calc:hover{opacity:.88}
 .btn-calc:disabled{opacity:.4;cursor:not-allowed}
 
-/* ─ RESULTS ─ */
-.result-empty{
-  padding:60px 20px;text-align:center;color:var(--t3);font-size:13px;line-height:1.7;
-}
+/* Results */
+.result-empty{padding:60px 20px;text-align:center;color:var(--t3);font-size:13px;line-height:1.7}
 .result-empty .big{font-size:32px;margin-bottom:12px;opacity:.3}
-
-/* Invoice table */
 .spec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);margin-bottom:12px}
 .inv-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px}
-.inv-table th{
-  text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;
-  letter-spacing:.8px;color:var(--t3);border-bottom:1px solid var(--border);font-weight:600;
-}
+.inv-table th{text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);border-bottom:1px solid var(--border);font-weight:600}
 .inv-table td{padding:11px 10px;border-bottom:1px solid var(--border);vertical-align:top}
 .inv-table tr:last-child td{border-bottom:none}
 .inv-table .lp{color:var(--t3);font-family:'DM Mono',monospace;font-size:11px;width:24px}
 .inv-table .iname{font-weight:500}
 .inv-table .idesc{font-size:11px;color:var(--t2);font-family:'DM Mono',monospace;margin-top:3px}
 .inv-table .num{font-family:'DM Mono',monospace;text-align:right;white-space:nowrap}
-.inv-table .unit-col{color:var(--t2);font-size:12px;text-align:center}
-
-/* Summary box */
-.summary-box{
-  background:var(--s2);border:1px solid var(--border);border-radius:var(--r);
-  padding:16px 20px;margin-bottom:16px;
-}
+.inv-table .uc{color:var(--t2);font-size:12px;text-align:center}
+.summary-box{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-bottom:16px}
 .sum-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:13px;color:var(--t2)}
 .sum-row .sv{font-family:'DM Mono',monospace}
 .sum-row.total{border-top:1px solid var(--border);margin-top:8px;padding-top:12px;color:var(--t1);font-weight:600;font-size:15px}
 .sum-row.total .sv{color:var(--acc);font-size:18px}
-
-.margin-pill{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(95,214,138,.1);border:1px solid rgba(95,214,138,.2);
-  color:var(--green);border-radius:4px;padding:5px 12px;
-  font-size:12px;font-family:'DM Mono',monospace;margin-bottom:16px;
-}
-
+.margin-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(95,214,138,.1);border:1px solid rgba(95,214,138,.2);color:var(--green);border-radius:4px;padding:5px 12px;font-size:12px;font-family:'DM Mono',monospace;margin-bottom:16px}
 .err{background:rgba(255,95,95,.1);border:1px solid rgba(255,95,95,.25);color:var(--red);border-radius:6px;padding:12px 16px;font-size:13px}
-
-/* loading */
 .spinner{width:18px;height:18px;border:2px solid rgba(0,0,0,.2);border-top-color:#0f0f0f;border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 @media(max-width:780px){.wrap{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Jotun · Kalkulator Cen Zakupu</h1>
-  <span class="badge">v1.0</span>
+  <h1>Jotun · Kalkulator Cen</h1>
+  <span class="badge">v1.1</span>
 </header>
 
 <div class="wrap">
-
   <!-- LEFT -->
   <div>
-    <div class="panel" style="margin-bottom:20px">
-      <div class="panel-head"><h2>📷 Wczytaj screenshot</h2></div>
+    <!-- Global settings -->
+    <div class="panel">
+      <div class="panel-head"><h2>⚙️ Ustawienia</h2></div>
       <div class="panel-body">
-        <div class="upload-zone" id="upload-zone">
-          <input type="file" id="file-input" accept="image/*" onchange="handleFile(this.files[0])">
-          <div class="icon">🖼️</div>
-          <p>Przeciągnij, kliknij lub <strong>Ctrl+V</strong></p>
-          <small>PNG / JPG z programu do mieszania</small>
-        </div>
-        <div id="preview-wrap"><img id="preview-img" src=""></div>
-        <div id="ocr-status" class="ocr-pill">
-          <span class="label">OCR:</span>
-          <span id="ocr-text">—</span>
+        <div class="row3">
+          <div class="field">
+            <label>Kurs EUR (PLN)</label>
+            <input type="number" id="euro-rate" value="4.30" step="0.01" min="1">
+          </div>
+          <div class="field">
+            <label>Marża (%)</label>
+            <input type="number" id="margin-num" value="30" min="0" max="99">
+          </div>
+          <div class="field">
+            <label>VAT (%)</label>
+            <input type="number" id="vat-num" value="23" min="0" max="100">
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Type tabs -->
     <div class="panel">
-      <div class="panel-head"><h2>⚙️ Parametry</h2></div>
+      <div class="panel-head"><h2>🎨 Produkt</h2></div>
       <div class="panel-body">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('mixed')">🖌 Mieszana</button>
+          <button class="tab" onclick="switchTab('ready')">🪣 Gotowa</button>
+        </div>
 
-        <div class="row2">
+        <!-- MIXED TAB -->
+        <div id="tab-mixed">
+          <div class="upload-zone" id="upload-zone">
+            <input type="file" id="file-input" accept="image/*" onchange="handleFile(this.files[0])">
+            <div class="icon">🖼️</div>
+            <p>Przeciągnij, kliknij lub <strong>Ctrl+V</strong></p>
+            <small>PNG / JPG z programu do mieszania</small>
+          </div>
+          <div id="preview-wrap"><img id="preview-img" src=""></div>
+          <div id="ocr-status" class="ocr-pill">
+            <span style="font-weight:600;margin-right:4px">OCR:</span>
+            <span id="ocr-text">—</span>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>Produkt</label>
+              <select id="sel-product" onchange="onProductChange()">
+                <option value="">— wybierz —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Baza</label>
+              <select id="sel-base" onchange="onBaseChange()">
+                <option value="">— wybierz —</option>
+              </select>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label>Opakowanie</label>
+              <select id="sel-pack">
+                <option value="">— wybierz —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Ilość (szt.)</label>
+              <input type="number" id="qty" value="1" min="1">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Formuła pigmentów</label>
+            <div class="formula-tags" id="formula-tags"></div>
+            <div class="add-row">
+              <input type="text" id="pig-code" placeholder="HT" style="text-transform:uppercase">
+              <input type="number" id="pig-units" placeholder="88" min="1">
+              <button class="icon-btn" onclick="addPigment()" title="Dodaj">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- READY TAB -->
+        <div id="tab-ready" style="display:none">
           <div class="field">
             <label>Produkt</label>
-            <select id="sel-product" onchange="onProductChange()">
+            <select id="sel-ready-product" onchange="onReadyProductChange()">
               <option value="">— wybierz —</option>
             </select>
           </div>
-          <div class="field">
-            <label>Baza</label>
-            <select id="sel-base" onchange="onBaseChange()">
-              <option value="">— wybierz —</option>
-            </select>
+          <div class="row2">
+            <div class="field">
+              <label>Opakowanie</label>
+              <select id="sel-ready-pack">
+                <option value="">— wybierz —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Ilość (szt.)</label>
+              <input type="number" id="qty-ready" value="1" min="1">
+            </div>
           </div>
         </div>
 
-        <div class="row2">
-          <div class="field">
-            <label>Opakowanie</label>
-            <select id="sel-pack">
-              <option value="">— wybierz —</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Ilość (szt.)</label>
-            <input type="number" id="qty" value="1" min="1" max="999">
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Formuła pigmentów</label>
-          <div class="formula-tags" id="formula-tags"></div>
-          <div class="add-formula-row">
-            <input type="text" id="pig-code" placeholder="HT" style="text-transform:uppercase">
-            <input type="number" id="pig-units" placeholder="88" min="1">
-            <button class="icon-btn" onclick="addPigment()" title="Dodaj">+</button>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Marża (%)</label>
-          <div class="slider-row">
-            <input type="range" id="margin-slider" min="0" max="70" value="30"
-              oninput="document.getElementById('margin-num').value=this.value">
-            <input type="number" id="margin-num" value="30" min="0" max="99"
-              oninput="document.getElementById('margin-slider').value=this.value">
-          </div>
-        </div>
-
-        <div class="field">
-          <label>VAT (%)</label>
-          <input type="number" id="vat-num" value="23" min="0" max="100" style="width:80px">
-        </div>
-
-        <button class="btn-calc" id="calc-btn" onclick="calculate()">
-          Oblicz →
-        </button>
+        <hr class="divider">
+        <button class="btn-calc" id="calc-btn" onclick="calculate()">Oblicz →</button>
       </div>
     </div>
   </div>
 
   <!-- RIGHT -->
-  <div class="panel">
+  <div class="panel" style="margin-bottom:0">
     <div class="panel-head"><h2>📄 Specyfikacja</h2></div>
     <div class="panel-body">
       <div class="result-empty" id="result-empty">
         <div class="big">🧮</div>
-        Wgraj screenshot lub wybierz produkt,<br>uzupełnij parametry i kliknij <strong>Oblicz</strong>.
+        Wybierz produkt, uzupełnij parametry<br>i kliknij <strong>Oblicz</strong>.
       </div>
       <div id="result-content" style="display:none"></div>
     </div>
   </div>
-
 </div>
 
 <script>
-// ── STATE ─────────────────────────────────────────────────────────────────────
 let PRODUCTS_LIST = [];
-let pigments = [];  // [{code, units}]
-let currentImageB64 = null;
-let currentMediaType = 'image/png';
+let pigments = [];
+let currentTab = 'mixed';
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
   const res = await fetch('/api/products');
   PRODUCTS_LIST = await res.json();
   PRODUCTS_LIST.sort((a,b) => a.name.localeCompare(b.name));
-  const sel = document.getElementById('sel-product');
+
+  const selMixed = document.getElementById('sel-product');
+  const selReady = document.getElementById('sel-ready-product');
+
   PRODUCTS_LIST.forEach(p => {
-    const o = document.createElement('option');
-    o.value = p.key; o.textContent = p.name;
-    sel.appendChild(o);
+    const hasBases = Object.keys(p.bases).length > 0;
+    const isStandard = Object.keys(p.bases).length === 1 && p.bases['STANDARD'];
+
+    // Mixed: has non-STANDARD bases
+    if (hasBases && !isStandard) {
+      const o = document.createElement('option');
+      o.value = p.key; o.textContent = p.name;
+      selMixed.appendChild(o);
+    }
+    // Ready: has STANDARD base only
+    if (isStandard) {
+      const o = document.createElement('option');
+      o.value = p.key; o.textContent = p.name;
+      selReady.appendChild(o);
+    }
   });
 }
 
-// ── FILE UPLOAD ───────────────────────────────────────────────────────────────
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-mixed').style.display = tab === 'mixed' ? '' : 'none';
+  document.getElementById('tab-ready').style.display = tab === 'ready' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='mixed') || (i===1 && tab==='ready'));
+  });
+}
+
+// ── UPLOAD / OCR ──────────────────────────────────────────────────────────────
 const zone = document.getElementById('upload-zone');
 zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
 zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
 zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
 
-// Ctrl+V paste from clipboard
 document.addEventListener('paste', e => {
   const items = e.clipboardData?.items;
   if (!items) return;
   for (const item of items) {
     if (item.type.startsWith('image/')) {
       const file = item.getAsFile();
-      if (file) {
-        zone.classList.add('drag');
-        setTimeout(() => zone.classList.remove('drag'), 300);
-        handleFile(file);
-      }
+      if (file) { zone.classList.add('drag'); setTimeout(() => zone.classList.remove('drag'), 300); handleFile(file); }
       break;
     }
   }
@@ -311,54 +294,38 @@ document.addEventListener('paste', e => {
 
 async function handleFile(file) {
   if (!file) return;
-  currentMediaType = file.type || 'image/png';
-
-  // Preview
+  const mediaType = file.type || 'image/png';
   const reader = new FileReader();
-  reader.onload = async (e) => {
+  reader.onload = async e => {
     document.getElementById('preview-img').src = e.target.result;
     document.getElementById('preview-wrap').style.display = '';
-
-    // Extract base64
-    currentImageB64 = e.target.result.split(',')[1];
-
-    // OCR
-    await runOCR();
+    const b64 = e.target.result.split(',')[1];
+    await runOCR(b64, mediaType);
   };
   reader.readAsDataURL(file);
 }
 
-async function runOCR() {
+async function runOCR(b64, mediaType) {
   const status = document.getElementById('ocr-status');
   const ocrText = document.getElementById('ocr-text');
   status.style.display = 'flex';
   ocrText.textContent = 'Analizuję...';
-
   try {
     const res = await fetch('/api/ocr', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({image_b64: currentImageB64, media_type: currentMediaType})
+      body: JSON.stringify({image_b64: b64, media_type: mediaType})
     });
     const data = await res.json();
-
-    if (data.error) {
-      ocrText.textContent = '⚠ ' + data.error;
-      return;
-    }
-
+    if (data.error) { ocrText.textContent = '⚠ ' + data.error; return; }
     ocrText.textContent = `${data.product_name} · Baza ${data.base} · ${data.formula.map(f=>f.code+f.units).join(' ')}`;
-
-    // Auto-fill form
     autofillFromOCR(data);
-
   } catch(e) {
-    ocrText.textContent = '⚠ Błąd OCR: ' + e.message;
+    ocrText.textContent = '⚠ ' + e.message;
   }
 }
 
 function autofillFromOCR(data) {
-  // Product
   const prod = PRODUCTS_LIST.find(p =>
     p.name.toUpperCase().includes(data.product_name.toUpperCase()) ||
     data.product_name.toUpperCase().includes(p.name.toUpperCase())
@@ -366,27 +333,25 @@ function autofillFromOCR(data) {
   if (prod) {
     document.getElementById('sel-product').value = prod.key;
     onProductChange();
-
-    // Base (after small delay for DOM update)
     setTimeout(() => {
-      const baseHint = data.base.toUpperCase();
+      const hint = data.base.toUpperCase();
       const selBase = document.getElementById('sel-base');
       for (const opt of selBase.options) {
-        if (opt.value.toUpperCase().startsWith(baseHint)) {
+        const norm = opt.value.toUpperCase().replace(/[-_]/g,' ');
+        const hintNorm = hint.replace(/[-_]/g,' ');
+        if (norm === hintNorm || norm.startsWith(hintNorm + ' ') || norm.includes(hintNorm)) {
           selBase.value = opt.value;
           onBaseChange();
           break;
         }
       }
-    }, 50);
+    }, 60);
   }
-
-  // Formula
   pigments = data.formula.map(f => ({code: f.code.toUpperCase(), units: f.units}));
   renderPigments();
 }
 
-// ── SELECTORS ─────────────────────────────────────────────────────────────────
+// ── MIXED SELECTORS ───────────────────────────────────────────────────────────
 function onProductChange() {
   const key = document.getElementById('sel-product').value;
   const selBase = document.getElementById('sel-base');
@@ -394,12 +359,10 @@ function onProductChange() {
   selBase.innerHTML = '<option value="">— wybierz —</option>';
   selPack.innerHTML = '<option value="">— wybierz —</option>';
   if (!key) return;
-
   const prod = PRODUCTS_LIST.find(p => p.key === key);
-  if (!prod) return;
-  Object.entries(prod.bases).forEach(([bkey, packs]) => {
+  Object.keys(prod.bases).forEach(bkey => {
     const o = document.createElement('option');
-    o.value = bkey; o.textContent = bkey.replace(/_/g,' ');
+    o.value = bkey; o.textContent = bkey.replace(/[-_]/g,' ');
     selBase.appendChild(o);
   });
   if (Object.keys(prod.bases).length === 1) {
@@ -414,10 +377,23 @@ function onBaseChange() {
   const selPack = document.getElementById('sel-pack');
   selPack.innerHTML = '<option value="">— wybierz —</option>';
   if (!key || !baseKey) return;
-
   const prod = PRODUCTS_LIST.find(p => p.key === key);
-  const packs = prod?.bases[baseKey] || [];
-  packs.sort((a,b) => parseFloat(a) - parseFloat(b));
+  const packs = (prod?.bases[baseKey] || []).sort((a,b) => parseFloat(a)-parseFloat(b));
+  packs.forEach(pk => {
+    const o = document.createElement('option');
+    o.value = pk; o.textContent = pk;
+    selPack.appendChild(o);
+  });
+}
+
+// ── READY SELECTORS ───────────────────────────────────────────────────────────
+function onReadyProductChange() {
+  const key = document.getElementById('sel-ready-product').value;
+  const selPack = document.getElementById('sel-ready-pack');
+  selPack.innerHTML = '<option value="">— wybierz —</option>';
+  if (!key) return;
+  const prod = PRODUCTS_LIST.find(p => p.key === key);
+  const packs = (prod?.bases['STANDARD'] || []).sort((a,b) => parseFloat(a)-parseFloat(b));
   packs.forEach(pk => {
     const o = document.createElement('option');
     o.value = pk; o.textContent = pk;
@@ -436,17 +412,11 @@ function addPigment() {
   document.getElementById('pig-units').value = '';
   document.getElementById('pig-code').focus();
 }
+document.getElementById('pig-units').addEventListener('keydown', e => { if (e.key==='Enter') addPigment(); });
 
-document.getElementById('pig-units').addEventListener('keydown', e => { if (e.key === 'Enter') addPigment(); });
-
-function removePigment(i) {
-  pigments.splice(i, 1);
-  renderPigments();
-}
-
+function removePigment(i) { pigments.splice(i,1); renderPigments(); }
 function renderPigments() {
-  const container = document.getElementById('formula-tags');
-  container.innerHTML = pigments.map((p,i) =>
+  document.getElementById('formula-tags').innerHTML = pigments.map((p,i) =>
     `<span class="ftag">${p.code}<strong>${p.units}</strong><span class="rm" onclick="removePigment(${i})">×</span></span>`
   ).join('');
 }
@@ -454,18 +424,34 @@ function renderPigments() {
 // ── CALCULATE ─────────────────────────────────────────────────────────────────
 async function calculate() {
   const btn = document.getElementById('calc-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div>';
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
 
-  const body = {
-    product_name: document.getElementById('sel-product').value,
-    base: document.getElementById('sel-base').value,
-    pack_size: document.getElementById('sel-pack').value,
-    quantity: parseInt(document.getElementById('qty').value) || 1,
-    formula: pigments,
-    margin_pct: parseFloat(document.getElementById('margin-num').value) || 30,
-    vat_pct: parseFloat(document.getElementById('vat-num').value) || 23
-  };
+  const margin = parseFloat(document.getElementById('margin-num').value) || 30;
+  const vat    = parseFloat(document.getElementById('vat-num').value) || 23;
+  const euro   = parseFloat(document.getElementById('euro-rate').value) || 4.30;
+
+  let body;
+  if (currentTab === 'mixed') {
+    body = {
+      mode: 'mixed',
+      product_name: document.getElementById('sel-product').value,
+      base: document.getElementById('sel-base').value,
+      pack_size: document.getElementById('sel-pack').value,
+      quantity: parseInt(document.getElementById('qty').value) || 1,
+      formula: pigments,
+      margin_pct: margin, vat_pct: vat, euro_rate: euro
+    };
+  } else {
+    body = {
+      mode: 'ready',
+      product_name: document.getElementById('sel-ready-product').value,
+      base: 'STANDARD',
+      pack_size: document.getElementById('sel-ready-pack').value,
+      quantity: parseInt(document.getElementById('qty-ready').value) || 1,
+      formula: [],
+      margin_pct: margin, vat_pct: vat, euro_rate: euro
+    };
+  }
 
   try {
     const res = await fetch('/api/calculate', {
@@ -476,31 +462,24 @@ async function calculate() {
     const data = await res.json();
     if (data.error) showError(data.error);
     else renderResult(data);
-  } catch(e) {
-    showError(e.message);
-  }
+  } catch(e) { showError(e.message); }
 
-  btn.disabled = false;
-  btn.innerHTML = 'Oblicz →';
+  btn.disabled = false; btn.innerHTML = 'Oblicz →';
 }
 
-// ── RENDER RESULT ─────────────────────────────────────────────────────────────
+// ── RENDER ────────────────────────────────────────────────────────────────────
 function renderResult(d) {
   document.getElementById('result-empty').style.display = 'none';
   const c = document.getElementById('result-content');
   c.style.display = '';
+  const fmt = n => n==null?'—':n.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2});
 
-  const fmt = n => n == null ? '—' : n.toLocaleString('pl-PL', {minimumFractionDigits:2, maximumFractionDigits:2});
-
-  const lines = d.invoice_lines.map((l,i) => `
+  const lines = d.invoice_lines.map(l => `
     <tr>
       <td class="lp">${l.lp}</td>
-      <td>
-        <div class="iname">${l.name}</div>
-        ${l.desc ? `<div class="idesc">${l.desc}</div>` : ''}
-      </td>
+      <td><div class="iname">${l.name}</div>${l.desc?`<div class="idesc">${l.desc}</div>`:''}</td>
       <td class="num">${l.qty}</td>
-      <td class="unit-col">${l.unit}</td>
+      <td class="uc">${l.unit}</td>
       <td class="num">${fmt(l.unit_price_net)}</td>
       <td class="num">${fmt(l.value_net)}</td>
       <td class="num" style="color:var(--t2);font-size:12px">${fmt(l.value_gross)}</td>
@@ -508,38 +487,26 @@ function renderResult(d) {
 
   c.innerHTML = `
     <div style="margin-bottom:16px">
-      <div style="font-size:16px;font-weight:600;margin-bottom:4px">
-        ${d.product_name} · Baza ${d.base.replace('_BAS','').replace('_BASE','')} · ${d.commercial_vol_l}L × ${d.quantity} szt.
-      </div>
-      <div style="font-size:12px;color:var(--t2);font-family:'DM Mono',monospace">
-        Marża ${d.margin_pct}% · VAT ${d.vat_pct}%
-      </div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:4px">${d.product_name} · ${d.base.replace(/[-_]/g,' ')} · ${d.commercial_vol_l}L × ${d.quantity} szt.</div>
+      <div style="font-size:12px;color:var(--t2);font-family:'DM Mono',monospace">Marża ${d.margin_pct}% · VAT ${d.vat_pct}% · EUR ${d.euro_rate} PLN</div>
     </div>
-
     <div class="spec-title">Specyfikacja towarowa</div>
-
     <table class="inv-table">
       <thead><tr>
         <th>L</th><th>Nazwa</th>
-        <th style="text-align:right">Ilość</th>
-        <th style="text-align:center">Jm</th>
-        <th style="text-align:right">Cena netto</th>
-        <th style="text-align:right">Wartość netto</th>
-        <th style="text-align:right">Brutto</th>
+        <th style="text-align:right">Ilość</th><th style="text-align:center">Jm</th>
+        <th style="text-align:right">Cena netto</th><th style="text-align:right">Wartość netto</th><th style="text-align:right">Brutto</th>
       </tr></thead>
       <tbody>${lines}</tbody>
     </table>
-
     <div class="summary-box">
       <div class="sum-row"><span>Koszt zakupu bazy</span><span class="sv">${fmt(d.purchase.base_pln * d.quantity)} PLN</span></div>
       ${d.purchase.pigment_pln > 0 ? `
       <div class="sum-row"><span>Koszt zakupu pigmentów</span><span class="sv">${fmt(d.purchase.pigment_pln * d.quantity)} PLN</span></div>
-      <div class="sum-row"><span>Wolumen pigmentów</span><span class="sv">${(d.purchase.pigment_vol_l * d.quantity).toFixed(4)} L</span></div>
-      ` : ''}
+      <div class="sum-row"><span>Wolumen pigmentów</span><span class="sv">${(d.purchase.pigment_vol_l * d.quantity).toFixed(4)} L</span></div>` : ''}
       <div class="sum-row"><span>Łączny koszt zakupu</span><span class="sv">${fmt(d.purchase.total_pln * d.quantity)} PLN</span></div>
       <div class="sum-row total"><span>Do zapłaty (brutto)</span><span class="sv">${fmt(d.summary.total_gross)} PLN</span></div>
     </div>
-
     <div class="margin-pill">↑ Marża: ${fmt(d.summary.margin_amount)} PLN &nbsp;|&nbsp; netto/szt: ${fmt(d.summary.total_net / d.quantity)} PLN</div>
   `;
 }
