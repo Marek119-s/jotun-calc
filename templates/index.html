@@ -3,152 +3,530 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jotun · Kalkulator</title>
+<title>Jotun · Kalkulator Cen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
 :root {
-  --bg:#0f0f0f; --s1:#1a1a1a; --s2:#222; --s3:#2a2a2a;
-  --border:#2e2e2e; --border2:#3a3a3a;
-  --acc:#e8c547; --acc2:#4a9eff; --green:#5fd68a; --red:#ff5f5f;
-  --t1:#f0f0f0; --t2:#999; --t3:#555;
-  --r:8px;
+  --bg: #f4f2ee;
+  --white: #ffffff;
+  --ink: #1a1a18;
+  --ink2: #5a5a52;
+  --ink3: #a0a098;
+  --border: #dddbd5;
+  --border2: #c8c5bc;
+  --acc: #c8a820;
+  --acc-bg: #fdf8e8;
+  --acc-border: #ede0a0;
+  --blue: #1a4a8a;
+  --blue-bg: #eef3fb;
+  --green: #1a7a3a;
+  --green-bg: #eaf5ee;
+  --red: #c03020;
+  --red-bg: #fdeeed;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+  --r: 10px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
 
-header{display:flex;align-items:center;gap:12px;padding:18px 32px;border-bottom:1px solid var(--border);background:var(--s1)}
-header h1{font-size:17px;font-weight:600;letter-spacing:-.3px}
-header .badge{font-family:'DM Mono',monospace;font-size:10px;background:rgba(232,197,71,.12);color:var(--acc);border:1px solid rgba(232,197,71,.25);border-radius:4px;padding:3px 8px}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-.wrap{max-width:1100px;margin:0 auto;padding:28px 24px;display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start}
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
 
-.panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
-.panel:last-child{margin-bottom:0}
-.panel-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.panel-head h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--t2)}
-.panel-body{padding:20px}
+/* ─ HEADER ─ */
+header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+}
 
-/* Tabs */
-.tabs{display:flex;gap:2px;background:var(--s2);border-radius:6px;padding:3px;margin-bottom:20px}
-.tab{flex:1;padding:8px;text-align:center;font-size:12px;font-weight:600;border-radius:4px;cursor:pointer;color:var(--t2);transition:all .15s;border:none;background:none}
-.tab.active{background:var(--s1);color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-/* Upload */
-.upload-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:28px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative;margin-bottom:16px}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--acc);background:rgba(232,197,71,.04)}
-.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.upload-zone .icon{font-size:26px;margin-bottom:6px;opacity:.5}
-.upload-zone p{font-size:13px;color:var(--t2)}
-.upload-zone small{font-size:11px;color:var(--t3);margin-top:3px;display:block}
+.logo-mark {
+  width: 30px; height: 30px;
+  background: var(--ink);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
 
-#preview-wrap{margin-bottom:14px;display:none}
-#preview-wrap img{width:100%;border-radius:6px;border:1px solid var(--border)}
+.logo h1 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -.3px;
+}
 
-.ocr-pill{display:flex;align-items:flex-start;gap:8px;background:rgba(74,158,255,.1);border:1px solid rgba(74,158,255,.2);border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--acc2);line-height:1.5}
-#ocr-status{display:none}
+.version {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--ink3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
 
-/* Fields */
-.field{margin-bottom:14px}
-label{display:block;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
-input,select{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--t1);padding:9px 12px;border-radius:6px;font-family:inherit;font-size:14px;outline:none;transition:border-color .15s;appearance:none}
-input:focus,select:focus{border-color:var(--acc)}
-select option{background:#1a1a1a}
+/* ─ LAYOUT ─ */
+.wrap {
+  max-width: 1160px;
+  margin: 32px auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 20px;
+  align-items: start;
+}
 
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+/* ─ CARDS ─ */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.card:last-child { margin-bottom: 0; }
 
-/* Formula */
-.formula-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:24px}
-.ftag{font-family:'DM Mono',monospace;font-size:11px;background:rgba(74,158,255,.12);border:1px solid rgba(74,158,255,.2);color:var(--acc2);border-radius:4px;padding:3px 8px;display:flex;align-items:center;gap:4px}
-.ftag .rm{cursor:pointer;color:var(--t3);font-size:14px;line-height:1}
-.ftag .rm:hover{color:var(--red)}
-.add-row{display:grid;grid-template-columns:1fr 80px 36px;gap:6px;align-items:end;margin-bottom:12px}
-.add-row input{font-family:'DM Mono',monospace}
-.icon-btn{width:36px;height:36px;background:var(--s3);border:1px solid var(--border2);border-radius:6px;color:var(--t2);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.icon-btn:hover{border-color:var(--acc);color:var(--acc)}
+.card-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fafaf8;
+}
 
-.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.card-head h2 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--ink2);
+}
 
-.btn-calc{width:100%;padding:13px;background:var(--acc);color:#0f0f0f;border:none;border-radius:var(--r);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-calc:hover{opacity:.88}
-.btn-calc:disabled{opacity:.4;cursor:not-allowed}
+.card-body { padding: 20px; }
 
-/* Results */
-.result-empty{padding:60px 20px;text-align:center;color:var(--t3);font-size:13px;line-height:1.7}
-.result-empty .big{font-size:32px;margin-bottom:12px;opacity:.3}
-.spec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);margin-bottom:12px}
-.inv-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px}
-.inv-table th{text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);border-bottom:1px solid var(--border);font-weight:600}
-.inv-table td{padding:11px 10px;border-bottom:1px solid var(--border);vertical-align:top}
-.inv-table tr:last-child td{border-bottom:none}
-.inv-table .lp{color:var(--t3);font-family:'DM Mono',monospace;font-size:11px;width:24px}
-.inv-table .iname{font-weight:500}
-.inv-table .idesc{font-size:11px;color:var(--t2);font-family:'DM Mono',monospace;margin-top:3px}
-.inv-table .num{font-family:'DM Mono',monospace;text-align:right;white-space:nowrap}
-.inv-table .uc{color:var(--t2);font-size:12px;text-align:center}
-.summary-box{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-bottom:16px}
-.sum-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:13px;color:var(--t2)}
-.sum-row .sv{font-family:'DM Mono',monospace}
-.sum-row.total{border-top:1px solid var(--border);margin-top:8px;padding-top:12px;color:var(--t1);font-weight:600;font-size:15px}
-.sum-row.total .sv{color:var(--acc);font-size:18px}
-.margin-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(95,214,138,.1);border:1px solid rgba(95,214,138,.2);color:var(--green);border-radius:4px;padding:5px 12px;font-size:12px;font-family:'DM Mono',monospace;margin-bottom:16px}
-.err{background:rgba(255,95,95,.1);border:1px solid rgba(255,95,95,.25);color:var(--red);border-radius:6px;padding:12px 16px;font-size:13px}
-.spinner{width:18px;height:18px;border:2px solid rgba(0,0,0,.2);border-top-color:#0f0f0f;border-radius:50%;animation:spin .6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media(max-width:780px){.wrap{grid-template-columns:1fr}}
+/* ─ SETTINGS ROW ─ */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+/* ─ TABS ─ */
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: var(--bg);
+  color: var(--ink2);
+  transition: all .15s;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.tab:last-child { border-right: none; }
+.tab:hover { background: #eeece8; color: var(--ink); }
+.tab.active {
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ─ FIELDS ─ */
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+
+label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink2);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 5px;
+}
+
+input, select {
+  width: 100%;
+  background: var(--white);
+  border: 1px solid var(--border2);
+  color: var(--ink);
+  padding: 9px 11px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  appearance: none;
+  box-shadow: var(--shadow-sm);
+}
+
+input:focus, select:focus {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px var(--acc-border);
+}
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a5a52' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  padding-right: 32px;
+}
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ─ UPLOAD ZONE ─ */
+.upload-zone {
+  border: 2px dashed var(--border2);
+  border-radius: var(--r);
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+  margin-bottom: 14px;
+  background: #fafaf8;
+}
+.upload-zone:hover, .upload-zone.drag {
+  border-color: var(--acc);
+  background: var(--acc-bg);
+}
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-zone .uz-icon { font-size: 24px; margin-bottom: 6px; }
+.upload-zone p { font-size: 13px; color: var(--ink2); }
+.upload-zone small { font-size: 11px; color: var(--ink3); margin-top: 3px; display: block; }
+
+#preview-wrap { margin-bottom: 12px; display: none; }
+#preview-wrap img { width: 100%; border-radius: 7px; border: 1px solid var(--border); }
+
+/* ─ OCR PILL ─ */
+.ocr-pill {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--blue-bg);
+  border: 1px solid #c0d4f0;
+  border-radius: 7px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--blue);
+  line-height: 1.5;
+}
+.ocr-pill .label { font-weight: 700; white-space: nowrap; margin-top: 1px; }
+#ocr-status { display: none; }
+
+/* ─ FORMULA TAGS ─ */
+.formula-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+  min-height: 28px;
+}
+.ftag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  background: var(--blue-bg);
+  border: 1px solid #c0d4f0;
+  color: var(--blue);
+  border-radius: 5px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+.ftag .rm {
+  cursor: pointer;
+  color: var(--ink3);
+  font-size: 14px;
+  line-height: 1;
+  margin-left: 2px;
+  transition: color .1s;
+}
+.ftag .rm:hover { color: var(--red); }
+
+.add-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 36px;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+.add-row input { font-family: 'IBM Plex Mono', monospace; }
+
+.icon-btn {
+  width: 36px; height: 37px;
+  background: var(--ink);
+  border: none;
+  border-radius: 7px;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity .15s;
+}
+.icon-btn:hover { opacity: .8; }
+
+/* ─ DIVIDER ─ */
+hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* ─ CALC BTN ─ */
+.btn-calc {
+  width: 100%;
+  padding: 13px;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: .2px;
+}
+.btn-calc:hover { opacity: .85; }
+.btn-calc:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ─ RESULTS ─ */
+.result-empty {
+  padding: 64px 20px;
+  text-align: center;
+  color: var(--ink3);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.result-empty .big { font-size: 36px; margin-bottom: 14px; }
+
+/* Result header */
+.res-product {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+  letter-spacing: -.3px;
+}
+.res-meta {
+  font-size: 12px;
+  color: var(--ink3);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 20px;
+}
+
+/* Invoice table */
+.sec-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--ink3);
+  margin-bottom: 10px;
+}
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.inv-table th {
+  text-align: left;
+  padding: 9px 12px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--ink3);
+  background: #fafaf8;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+.inv-table td {
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.inv-table tr:last-child td { border-bottom: none; }
+.inv-table .lp { color: var(--ink3); font-family: 'IBM Plex Mono', monospace; font-size: 11px; width: 28px; }
+.inv-table .iname { font-weight: 600; color: var(--ink); }
+.inv-table .idesc { font-size: 11px; color: var(--ink3); font-family: 'IBM Plex Mono', monospace; margin-top: 3px; }
+.inv-table .num { font-family: 'IBM Plex Mono', monospace; text-align: right; white-space: nowrap; font-weight: 500; }
+.inv-table .uc { color: var(--ink3); font-size: 12px; text-align: center; }
+
+/* Summary */
+.summary-box {
+  background: #fafaf8;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 9px 16px;
+  font-size: 13px;
+  color: var(--ink2);
+  border-bottom: 1px solid var(--border);
+}
+.sum-row:last-child { border-bottom: none; }
+.sum-row .sv {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+}
+.sum-row.total {
+  background: var(--ink);
+  color: #fff;
+  padding: 14px 16px;
+}
+.sum-row.total .sv {
+  color: #f0d050;
+  font-size: 20px;
+  font-weight: 600;
+}
+.sum-row.total span:first-child {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.margin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--green-bg);
+  border: 1px solid #b0dfc0;
+  color: var(--green);
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+}
+
+.err {
+  background: var(--red-bg);
+  border: 1px solid #f0c0b8;
+  color: var(--red);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 13px;
+}
+
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 800px) { .wrap { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Jotun · Kalkulator Cen</h1>
-  <span class="badge">v1.1</span>
+  <div class="logo">
+    <div class="logo-mark">JT</div>
+    <h1>Kalkulator Cen Zakupu</h1>
+  </div>
+  <span class="version">v1.1</span>
 </header>
 
 <div class="wrap">
-  <!-- LEFT -->
+
+  <!-- LEFT COLUMN -->
   <div>
-    <!-- Global settings -->
-    <div class="panel">
-      <div class="panel-head"><h2>⚙️ Ustawienia</h2></div>
-      <div class="panel-body">
-        <div class="row3">
+
+    <!-- Settings -->
+    <div class="card">
+      <div class="card-head"><h2>⚙ Ustawienia</h2></div>
+      <div class="card-body">
+        <div class="settings-grid">
           <div class="field">
-            <label>Kurs EUR (PLN)</label>
+            <label>Kurs EUR</label>
             <input type="number" id="euro-rate" value="4.30" step="0.01" min="1">
           </div>
           <div class="field">
-            <label>Marża (%)</label>
+            <label>Marża %</label>
             <input type="number" id="margin-num" value="30" min="0" max="99">
           </div>
           <div class="field">
-            <label>VAT (%)</label>
+            <label>VAT %</label>
             <input type="number" id="vat-num" value="23" min="0" max="100">
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Type tabs -->
-    <div class="panel">
-      <div class="panel-head"><h2>🎨 Produkt</h2></div>
-      <div class="panel-body">
+    <!-- Product -->
+    <div class="card">
+      <div class="card-head"><h2>🎨 Produkt</h2></div>
+      <div class="card-body">
+
         <div class="tabs">
-          <button class="tab active" onclick="switchTab('mixed')">🖌 Mieszana</button>
-          <button class="tab" onclick="switchTab('ready')">🪣 Gotowa</button>
+          <button class="tab active" onclick="switchTab('mixed')">🖌&nbsp; Mieszana</button>
+          <button class="tab" onclick="switchTab('ready')">🪣&nbsp; Gotowa</button>
         </div>
 
-        <!-- MIXED TAB -->
+        <!-- MIXED -->
         <div id="tab-mixed">
           <div class="upload-zone" id="upload-zone">
             <input type="file" id="file-input" accept="image/*" onchange="handleFile(this.files[0])">
-            <div class="icon">🖼️</div>
+            <div class="uz-icon">📷</div>
             <p>Przeciągnij, kliknij lub <strong>Ctrl+V</strong></p>
-            <small>PNG / JPG z programu do mieszania</small>
+            <small>Screenshot z programu do mieszania</small>
           </div>
           <div id="preview-wrap"><img id="preview-img" src=""></div>
           <div id="ocr-status" class="ocr-pill">
-            <span style="font-weight:600;margin-right:4px">OCR:</span>
+            <span class="label">OCR</span>
             <span id="ocr-text">—</span>
           </div>
 
@@ -183,14 +561,14 @@ select option{background:#1a1a1a}
             <label>Formuła pigmentów</label>
             <div class="formula-tags" id="formula-tags"></div>
             <div class="add-row">
-              <input type="text" id="pig-code" placeholder="HT" style="text-transform:uppercase">
+              <input type="text" id="pig-code" placeholder="np. HT" style="text-transform:uppercase;font-family:'IBM Plex Mono',monospace">
               <input type="number" id="pig-units" placeholder="88" min="1">
-              <button class="icon-btn" onclick="addPigment()" title="Dodaj">+</button>
+              <button class="icon-btn" onclick="addPigment()" title="Dodaj pigment">+</button>
             </div>
           </div>
         </div>
 
-        <!-- READY TAB -->
+        <!-- READY -->
         <div id="tab-ready" style="display:none">
           <div class="field">
             <label>Produkt</label>
@@ -212,23 +590,25 @@ select option{background:#1a1a1a}
           </div>
         </div>
 
-        <hr class="divider">
-        <button class="btn-calc" id="calc-btn" onclick="calculate()">Oblicz →</button>
+        <hr>
+        <button class="btn-calc" id="calc-btn" onclick="calculate()">Oblicz cenę →</button>
       </div>
     </div>
+
   </div>
 
-  <!-- RIGHT -->
-  <div class="panel" style="margin-bottom:0">
-    <div class="panel-head"><h2>📄 Specyfikacja</h2></div>
-    <div class="panel-body">
+  <!-- RIGHT COLUMN -->
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head"><h2>📋 Specyfikacja towarowa</h2></div>
+    <div class="card-body">
       <div class="result-empty" id="result-empty">
         <div class="big">🧮</div>
-        Wybierz produkt, uzupełnij parametry<br>i kliknij <strong>Oblicz</strong>.
+        Wybierz produkt i parametry,<br>następnie kliknij <strong>Oblicz cenę</strong>.
       </div>
       <div id="result-content" style="display:none"></div>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -236,7 +616,6 @@ let PRODUCTS_LIST = [];
 let pigments = [];
 let currentTab = 'mixed';
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
   const res = await fetch('/api/products');
   PRODUCTS_LIST = await res.json();
@@ -246,16 +625,13 @@ async function init() {
   const selReady = document.getElementById('sel-ready-product');
 
   PRODUCTS_LIST.forEach(p => {
-    const hasBases = Object.keys(p.bases).length > 0;
-    const isStandard = Object.keys(p.bases).length === 1 && p.bases['STANDARD'];
-
-    // Mixed: has non-STANDARD bases
-    if (hasBases && !isStandard) {
+    const keys = Object.keys(p.bases);
+    const isStandard = keys.length === 1 && keys[0] === 'STANDARD';
+    if (!isStandard && keys.length > 0) {
       const o = document.createElement('option');
       o.value = p.key; o.textContent = p.name;
       selMixed.appendChild(o);
     }
-    // Ready: has STANDARD base only
     if (isStandard) {
       const o = document.createElement('option');
       o.value = p.key; o.textContent = p.name;
@@ -264,29 +640,25 @@ async function init() {
   });
 }
 
-// ── TABS ──────────────────────────────────────────────────────────────────────
 function switchTab(tab) {
   currentTab = tab;
   document.getElementById('tab-mixed').style.display = tab === 'mixed' ? '' : 'none';
-  document.getElementById('tab-ready').style.display = tab === 'ready' ? '' : 'none';
+  document.getElementById('tab-ready').style.display  = tab === 'ready'  ? '' : 'none';
   document.querySelectorAll('.tab').forEach((t,i) => {
-    t.classList.toggle('active', (i===0 && tab==='mixed') || (i===1 && tab==='ready'));
+    t.classList.toggle('active', (i===0&&tab==='mixed')||(i===1&&tab==='ready'));
   });
 }
 
-// ── UPLOAD / OCR ──────────────────────────────────────────────────────────────
+// Upload / OCR
 const zone = document.getElementById('upload-zone');
 zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
 zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
 zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
-
 document.addEventListener('paste', e => {
-  const items = e.clipboardData?.items;
-  if (!items) return;
-  for (const item of items) {
+  for (const item of (e.clipboardData?.items || [])) {
     if (item.type.startsWith('image/')) {
-      const file = item.getAsFile();
-      if (file) { zone.classList.add('drag'); setTimeout(() => zone.classList.remove('drag'), 300); handleFile(file); }
+      const f = item.getAsFile();
+      if (f) { zone.classList.add('drag'); setTimeout(() => zone.classList.remove('drag'), 400); handleFile(f); }
       break;
     }
   }
@@ -294,13 +666,11 @@ document.addEventListener('paste', e => {
 
 async function handleFile(file) {
   if (!file) return;
-  const mediaType = file.type || 'image/png';
   const reader = new FileReader();
   reader.onload = async e => {
     document.getElementById('preview-img').src = e.target.result;
     document.getElementById('preview-wrap').style.display = '';
-    const b64 = e.target.result.split(',')[1];
-    await runOCR(b64, mediaType);
+    await runOCR(e.target.result.split(',')[1], file.type || 'image/png');
   };
   reader.readAsDataURL(file);
 }
@@ -309,20 +679,17 @@ async function runOCR(b64, mediaType) {
   const status = document.getElementById('ocr-status');
   const ocrText = document.getElementById('ocr-text');
   status.style.display = 'flex';
-  ocrText.textContent = 'Analizuję...';
+  ocrText.textContent = 'Analizuję obraz...';
   try {
     const res = await fetch('/api/ocr', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({image_b64: b64, media_type: mediaType})
     });
     const data = await res.json();
     if (data.error) { ocrText.textContent = '⚠ ' + data.error; return; }
     ocrText.textContent = `${data.product_name} · Baza ${data.base} · ${data.formula.map(f=>f.code+f.units).join(' ')}`;
     autofillFromOCR(data);
-  } catch(e) {
-    ocrText.textContent = '⚠ ' + e.message;
-  }
+  } catch(e) { ocrText.textContent = '⚠ ' + e.message; }
 }
 
 function autofillFromOCR(data) {
@@ -334,15 +701,12 @@ function autofillFromOCR(data) {
     document.getElementById('sel-product').value = prod.key;
     onProductChange();
     setTimeout(() => {
-      const hint = data.base.toUpperCase();
+      const hint = data.base.toUpperCase().replace(/[-_]/g,' ');
       const selBase = document.getElementById('sel-base');
       for (const opt of selBase.options) {
         const norm = opt.value.toUpperCase().replace(/[-_]/g,' ');
-        const hintNorm = hint.replace(/[-_]/g,' ');
-        if (norm === hintNorm || norm.startsWith(hintNorm + ' ') || norm.includes(hintNorm)) {
-          selBase.value = opt.value;
-          onBaseChange();
-          break;
+        if (norm === hint || norm.startsWith(hint+' ') || norm.includes(hint)) {
+          selBase.value = opt.value; onBaseChange(); break;
         }
       }
     }, 60);
@@ -351,7 +715,6 @@ function autofillFromOCR(data) {
   renderPigments();
 }
 
-// ── MIXED SELECTORS ───────────────────────────────────────────────────────────
 function onProductChange() {
   const key = document.getElementById('sel-product').value;
   const selBase = document.getElementById('sel-base');
@@ -366,8 +729,7 @@ function onProductChange() {
     selBase.appendChild(o);
   });
   if (Object.keys(prod.bases).length === 1) {
-    selBase.value = Object.keys(prod.bases)[0];
-    onBaseChange();
+    selBase.value = Object.keys(prod.bases)[0]; onBaseChange();
   }
 }
 
@@ -386,22 +748,19 @@ function onBaseChange() {
   });
 }
 
-// ── READY SELECTORS ───────────────────────────────────────────────────────────
 function onReadyProductChange() {
   const key = document.getElementById('sel-ready-product').value;
   const selPack = document.getElementById('sel-ready-pack');
   selPack.innerHTML = '<option value="">— wybierz —</option>';
   if (!key) return;
   const prod = PRODUCTS_LIST.find(p => p.key === key);
-  const packs = (prod?.bases['STANDARD'] || []).sort((a,b) => parseFloat(a)-parseFloat(b));
-  packs.forEach(pk => {
+  (prod?.bases['STANDARD'] || []).sort((a,b) => parseFloat(a)-parseFloat(b)).forEach(pk => {
     const o = document.createElement('option');
     o.value = pk; o.textContent = pk;
     selPack.appendChild(o);
   });
 }
 
-// ── PIGMENTS ──────────────────────────────────────────────────────────────────
 function addPigment() {
   const code = document.getElementById('pig-code').value.trim().toUpperCase();
   const units = parseInt(document.getElementById('pig-units').value);
@@ -417,46 +776,39 @@ document.getElementById('pig-units').addEventListener('keydown', e => { if (e.ke
 function removePigment(i) { pigments.splice(i,1); renderPigments(); }
 function renderPigments() {
   document.getElementById('formula-tags').innerHTML = pigments.map((p,i) =>
-    `<span class="ftag">${p.code}<strong>${p.units}</strong><span class="rm" onclick="removePigment(${i})">×</span></span>`
+    `<span class="ftag">${p.code}&nbsp;<strong>${p.units}</strong><span class="rm" onclick="removePigment(${i})">×</span></span>`
   ).join('');
 }
 
-// ── CALCULATE ─────────────────────────────────────────────────────────────────
 async function calculate() {
   const btn = document.getElementById('calc-btn');
-  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>&nbsp;Obliczam...';
 
-  const margin = parseFloat(document.getElementById('margin-num').value) || 30;
-  const vat    = parseFloat(document.getElementById('vat-num').value) || 23;
-  const euro   = parseFloat(document.getElementById('euro-rate').value) || 4.30;
-
-  let body;
-  if (currentTab === 'mixed') {
-    body = {
-      mode: 'mixed',
-      product_name: document.getElementById('sel-product').value,
-      base: document.getElementById('sel-base').value,
-      pack_size: document.getElementById('sel-pack').value,
-      quantity: parseInt(document.getElementById('qty').value) || 1,
-      formula: pigments,
-      margin_pct: margin, vat_pct: vat, euro_rate: euro
-    };
-  } else {
-    body = {
-      mode: 'ready',
-      product_name: document.getElementById('sel-ready-product').value,
-      base: 'STANDARD',
-      pack_size: document.getElementById('sel-ready-pack').value,
-      quantity: parseInt(document.getElementById('qty-ready').value) || 1,
-      formula: [],
-      margin_pct: margin, vat_pct: vat, euro_rate: euro
-    };
-  }
+  const body = currentTab === 'mixed' ? {
+    mode: 'mixed',
+    product_name: document.getElementById('sel-product').value,
+    base: document.getElementById('sel-base').value,
+    pack_size: document.getElementById('sel-pack').value,
+    quantity: parseInt(document.getElementById('qty').value) || 1,
+    formula: pigments,
+    margin_pct: parseFloat(document.getElementById('margin-num').value) || 30,
+    vat_pct:    parseFloat(document.getElementById('vat-num').value) || 23,
+    euro_rate:  parseFloat(document.getElementById('euro-rate').value) || 4.3
+  } : {
+    mode: 'ready',
+    product_name: document.getElementById('sel-ready-product').value,
+    base: 'STANDARD',
+    pack_size: document.getElementById('sel-ready-pack').value,
+    quantity: parseInt(document.getElementById('qty-ready').value) || 1,
+    formula: [],
+    margin_pct: parseFloat(document.getElementById('margin-num').value) || 30,
+    vat_pct:    parseFloat(document.getElementById('vat-num').value) || 23,
+    euro_rate:  parseFloat(document.getElementById('euro-rate').value) || 4.3
+  };
 
   try {
     const res = await fetch('/api/calculate', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify(body)
     });
     const data = await res.json();
@@ -464,50 +816,77 @@ async function calculate() {
     else renderResult(data);
   } catch(e) { showError(e.message); }
 
-  btn.disabled = false; btn.innerHTML = 'Oblicz →';
+  btn.disabled = false; btn.innerHTML = 'Oblicz cenę →';
 }
 
-// ── RENDER ────────────────────────────────────────────────────────────────────
 function renderResult(d) {
   document.getElementById('result-empty').style.display = 'none';
   const c = document.getElementById('result-content');
   c.style.display = '';
-  const fmt = n => n==null?'—':n.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  const fmt = n => n==null ? '—' : n.toLocaleString('pl-PL', {minimumFractionDigits:2, maximumFractionDigits:2});
 
   const lines = d.invoice_lines.map(l => `
     <tr>
       <td class="lp">${l.lp}</td>
-      <td><div class="iname">${l.name}</div>${l.desc?`<div class="idesc">${l.desc}</div>`:''}</td>
+      <td>
+        <div class="iname">${l.name}</div>
+        ${l.desc ? `<div class="idesc">${l.desc}</div>` : ''}
+      </td>
       <td class="num">${l.qty}</td>
       <td class="uc">${l.unit}</td>
       <td class="num">${fmt(l.unit_price_net)}</td>
       <td class="num">${fmt(l.value_net)}</td>
-      <td class="num" style="color:var(--t2);font-size:12px">${fmt(l.value_gross)}</td>
+      <td class="num" style="color:var(--ink3)">${fmt(l.value_gross)}</td>
     </tr>`).join('');
 
   c.innerHTML = `
-    <div style="margin-bottom:16px">
-      <div style="font-size:16px;font-weight:600;margin-bottom:4px">${d.product_name} · ${d.base.replace(/[-_]/g,' ')} · ${d.commercial_vol_l}L × ${d.quantity} szt.</div>
-      <div style="font-size:12px;color:var(--t2);font-family:'DM Mono',monospace">Marża ${d.margin_pct}% · VAT ${d.vat_pct}% · EUR ${d.euro_rate} PLN</div>
-    </div>
-    <div class="spec-title">Specyfikacja towarowa</div>
+    <div class="res-product">${d.product_name} · ${d.base.replace(/[-_]/g,' ')} · ${d.commercial_vol_l} L × ${d.quantity} szt.</div>
+    <div class="res-meta">Marża ${d.margin_pct}% &nbsp;·&nbsp; VAT ${d.vat_pct}% &nbsp;·&nbsp; EUR ${d.euro_rate} PLN</div>
+
+    <div class="sec-label">Pozycje fakturowe</div>
     <table class="inv-table">
       <thead><tr>
-        <th>L</th><th>Nazwa</th>
-        <th style="text-align:right">Ilość</th><th style="text-align:center">Jm</th>
-        <th style="text-align:right">Cena netto</th><th style="text-align:right">Wartość netto</th><th style="text-align:right">Brutto</th>
+        <th>Lp</th><th>Nazwa towaru</th>
+        <th style="text-align:right">Ilość</th>
+        <th style="text-align:center">Jm</th>
+        <th style="text-align:right">Cena netto</th>
+        <th style="text-align:right">Wartość netto</th>
+        <th style="text-align:right">Brutto</th>
       </tr></thead>
       <tbody>${lines}</tbody>
     </table>
+
+    <div class="sec-label">Kalkulacja</div>
     <div class="summary-box">
-      <div class="sum-row"><span>Koszt zakupu bazy</span><span class="sv">${fmt(d.purchase.base_pln * d.quantity)} PLN</span></div>
+      <div class="sum-row">
+        <span>Koszt zakupu — baza</span>
+        <span class="sv">${fmt(d.purchase.base_pln * d.quantity)} PLN</span>
+      </div>
       ${d.purchase.pigment_pln > 0 ? `
-      <div class="sum-row"><span>Koszt zakupu pigmentów</span><span class="sv">${fmt(d.purchase.pigment_pln * d.quantity)} PLN</span></div>
-      <div class="sum-row"><span>Wolumen pigmentów</span><span class="sv">${(d.purchase.pigment_vol_l * d.quantity).toFixed(4)} L</span></div>` : ''}
-      <div class="sum-row"><span>Łączny koszt zakupu</span><span class="sv">${fmt(d.purchase.total_pln * d.quantity)} PLN</span></div>
-      <div class="sum-row total"><span>Do zapłaty (brutto)</span><span class="sv">${fmt(d.summary.total_gross)} PLN</span></div>
+      <div class="sum-row">
+        <span>Koszt zakupu — pigmenty (${(d.purchase.pigment_vol_l * d.quantity).toFixed(4)} L)</span>
+        <span class="sv">${fmt(d.purchase.pigment_pln * d.quantity)} PLN</span>
+      </div>` : ''}
+      <div class="sum-row">
+        <span>Łączny koszt zakupu</span>
+        <span class="sv">${fmt(d.purchase.total_pln * d.quantity)} PLN</span>
+      </div>
+      <div class="sum-row">
+        <span>Sprzedaż netto</span>
+        <span class="sv">${fmt(d.summary.total_net)} PLN</span>
+      </div>
+      <div class="sum-row total">
+        <span>Do zapłaty (brutto)</span>
+        <span class="sv">${fmt(d.summary.total_gross)} PLN</span>
+      </div>
     </div>
-    <div class="margin-pill">↑ Marża: ${fmt(d.summary.margin_amount)} PLN &nbsp;|&nbsp; netto/szt: ${fmt(d.summary.total_net / d.quantity)} PLN</div>
+
+    <div class="margin-pill">
+      ↑ Marża: <strong>${fmt(d.summary.margin_amount)} PLN</strong>
+      &nbsp;·&nbsp;
+      Netto/szt: <strong>${fmt(d.summary.total_net / d.quantity)} PLN</strong>
+    </div>
   `;
 }
 
@@ -515,7 +894,7 @@ function showError(msg) {
   document.getElementById('result-empty').style.display = 'none';
   const c = document.getElementById('result-content');
   c.style.display = '';
-  c.innerHTML = `<div class="err">⚠ ${msg}</div>`;
+  c.innerHTML = `<div class="err">⚠&nbsp; ${msg}</div>`;
 }
 
 init();
