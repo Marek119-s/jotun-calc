@@ -560,10 +560,15 @@ hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
           <div class="field">
             <label>Formuła pigmentów</label>
             <div class="formula-tags" id="formula-tags"></div>
-            <div class="add-row">
-              <input type="text" id="pig-code" placeholder="np. HT" style="text-transform:uppercase;font-family:'IBM Plex Mono',monospace">
-              <input type="number" id="pig-units" placeholder="88" min="1">
-              <button class="icon-btn" onclick="addPigment()" title="Dodaj pigment">+</button>
+            <div style="margin-top:8px">
+              <button onclick="toggleAddRow()" style="background:none;border:none;font-size:12px;color:var(--ink3);cursor:pointer;padding:0;font-family:inherit">+ dodaj ręcznie</button>
+              <div id="add-row-wrap" style="display:none;margin-top:8px">
+                <div class="add-row">
+                  <input type="text" id="pig-code" placeholder="np. HT" style="text-transform:uppercase;font-family:'IBM Plex Mono',monospace">
+                  <input type="number" id="pig-units" placeholder="88" min="1" step="0.1">
+                  <button class="icon-btn" onclick="addPigment()" title="Dodaj">+</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -776,6 +781,11 @@ function onReadyProductChange() {
     o.value = pk; o.textContent = pk;
     selPack.appendChild(o);
   });
+}
+
+function toggleAddRow() {
+  const wrap = document.getElementById('add-row-wrap');
+  wrap.style.display = wrap.style.display === 'none' ? '' : 'none';
 }
 
 function addPigment() {
