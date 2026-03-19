@@ -7,84 +7,124 @@ from openai import OpenAI
 
 app = Flask(__name__)
 
-# Load pricing data
 DATA_PATH = Path(__file__).parent / "pricing_data" / "purchase_prices.json"
 with open(DATA_PATH, encoding="utf-8") as f:
     PRICING = json.load(f)
 
-PRODUCTS = PRICING["products"]
-TINTERS  = PRICING["tinters"]
-ML_PER_UNIT = PRICING["meta"]["tinting_unit_ml"]
+PRODUCTS    = PRICING["products"]
+TINTERS     = PRICING["tinters"]
+ML_PER_UNIT = PRICING["meta"]["tinting_unit_ml"]  # 0.308 ml per unit
 
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
+# ── Sanity limits ─────────────────────────────────────────────────────────────
+UNITS_MIN = 0.1
+UNITS_MAX = 200.0
 
-# ── OCR via GPT-4o Vision ─────────────────────────────────────────────────────
+# ── OCR helpers ───────────────────────────────────────────────────────────────
+
+def fix_ocr_number(s: str) -> str:
+    """Fix common OCR errors — only in the numeric part."""
+    return s.replace('O','0').replace('o','0').replace('I','1').replace('l','1').replace('B','8')
+
+def validate_formula(raw_formula: list) -> tuple[list, list]:
+    """
+    Validate and clean formula items from OCR.
+    Returns (validated_list, errors_list)
+    """
+    validated = []
+    errors = []
+    for item in raw_formula:
+        code      = str(item.get("code", "")).upper().strip()
+        units_raw = str(item.get("units", "")).strip()
+
+        # Fix OCR errors in number only
+        units_fixed = fix_ocr_number(units_raw)
+
+        # Parse float
+        try:
+            units = float(units_fixed)
+        except ValueError:
+            errors.append(f"{code}{units_raw}: nie można odczytać liczby")
+            continue
+
+        # Validate code: exactly 2 uppercase letters
+        if not re.match(r'^[A-Z]{2}$', code):
+            errors.append(f"Nieprawidłowy kod pigmentu: '{code}'")
+            continue
+
+        # Sanity check
+        if units < UNITS_MIN or units > UNITS_MAX:
+            errors.append(f"{code}: wartość {units} poza zakresem {UNITS_MIN}–{UNITS_MAX}")
+            continue
+
+        validated.append({"code": code, "units": units})
+
+    return validated, errors
+
+# ── OCR via GPT-4o ────────────────────────────────────────────────────────────
 
 def ocr_formula(image_b64: str, media_type: str) -> dict:
     prompt = """You are reading a screenshot from a Jotun paint tinting machine.
-Extract exactly:
-1. product_name - e.g. "DEMIDEKK CLEANTECH"
-2. base - single letter or short code, e.g. "C", "A", "B", "VIT"
-3. formula - list of objects with "code" (e.g. "HT") and "units" (integer), parsed from e.g. "HT088 OK076 RB007 SS054"
 
-Respond ONLY with valid JSON, no markdown, no explanation:
-{"product_name": "...", "base": "...", "formula": [{"code": "HT", "units": 88}, ...]}"""
+The formula column shows entries like: HT003.7 OK011.8 RB040.3 SS068.7
+
+Format is ALWAYS: [2 letters][3 digits].[1 digit]
+
+Reading rules - THIS IS CRITICAL:
+  HT003.7 = code HT, units 3.7   (leading zeros: 003 = 3, decimal .7)
+  OK011.8 = code OK, units 11.8  (011 = 11, decimal .8)
+  RB040.3 = code RB, units 40.3  (040 = 40, decimal .3)
+  SS068.7 = code SS, units 68.7  (068 = 68, decimal .7)
+
+NEVER drop the decimal. NEVER round. 003.7 is 3.7 not 4. 011.8 is 11.8 not 12.
+
+Extract:
+1. product_name - e.g. "DEMIDEKK CLEANTECH"
+2. base - single letter "A", "B", "C" or "VIT"
+3. formula - every pigment entry with exact float value
+
+JSON only:
+{"product_name":"DEMIDEKK CLEANTECH","base":"C","formula":[{"code":"HT","units":3.7},{"code":"OK","units":11.8},{"code":"RB","units":40.3},{"code":"SS","units":68.7}]}"""
 
     resp = client.chat.completions.create(
         model="gpt-4o",
-        max_tokens=300,
-        messages=[{
-            "role": "user",
-            "content": [
-                {"type": "image_url", "image_url": {"url": f"data:{media_type};base64,{image_b64}"}},
-                {"type": "text", "text": prompt}
-            ]
-        }]
+        max_tokens=400,
+        messages=[{"role": "user", "content": [
+            {"type": "image_url", "image_url": {"url": f"data:{media_type};base64,{image_b64}"}},
+            {"type": "text", "text": prompt}
+        ]}]
     )
     raw = resp.choices[0].message.content.strip()
     raw = re.sub(r'^```json|```$', '', raw, flags=re.MULTILINE).strip()
     return json.loads(raw)
 
-
 # ── Pricing logic ─────────────────────────────────────────────────────────────
 
-def normalize(s):
-    """Normalize string: uppercase, replace -/_ with space, strip."""
+def normalize(s: str) -> str:
     return re.sub(r'[-_]', ' ', s.upper().strip())
 
 def find_product(product_name: str):
-    name_up = product_name.upper().strip()
     name_norm = normalize(product_name)
     for key, prod in PRODUCTS.items():
-        prod_norm = normalize(prod["product_name"])
-        if prod_norm in name_norm or name_norm in prod_norm:
-            return key, prod
-        if prod["product_name"].upper() in name_up or name_up in prod["product_name"].upper():
+        if normalize(prod["product_name"]) in name_norm or name_norm in normalize(prod["product_name"]):
             return key, prod
     return None, None
-
 
 def find_base(prod: dict, base_hint: str):
     hint_norm = normalize(base_hint)
     hint_up   = base_hint.upper().strip()
-    bases = prod.get("bases", {})
-    for bkey, bdata in bases.items():
+    for bkey, bdata in prod.get("bases", {}).items():
         bkey_norm = normalize(bkey)
-        # exact normalized match
-        if hint_norm == bkey_norm:
+        if hint_norm == bkey_norm or hint_norm in bkey_norm:
             return bkey, bdata
-        # hint contained in key
-        if hint_norm in bkey_norm:
+        if re.match(r'^[A-Z]$', hint_up) and bkey_norm.startswith(hint_up + ' '):
             return bkey, bdata
-        # single letter: C → C-BAS, C_BAS, C BASE
-        if re.match(r'^[A-Z]$', hint_up):
-            if bkey_norm.startswith(hint_up + ' '):
-                return bkey, bdata
     return None, None
 
+def calculate_price(product_name, base_hint, pack_size, quantity,
+                    formula, margin_pct, vat_pct, euro_rate=4.3):
 
-def calculate_price(product_name, base_hint, pack_size, quantity, formula, margin_pct, vat_pct, euro_rate=4.3):
     prod_key, prod = find_product(product_name)
     if not prod:
         return {"error": f"Nie znaleziono produktu: {product_name}"}
@@ -99,18 +139,18 @@ def calculate_price(product_name, base_hint, pack_size, quantity, formula, margi
         available = list(base_packs.keys())
         return {"error": f"Brak opakowania {pack_size}. Dostępne: {available}"}
 
-    base_vol_l      = pack["base_vol_l"]
+    base_vol_l       = pack["base_vol_l"]
     commercial_vol_l = pack["commercial_vol_l"]
-    base_price_pln  = pack["price_pln_per_pack"]
+    base_price_pln   = pack["price_pln_per_pack"]
 
-    # Pigments: formula per 1L base → scale by base_vol_l
+    # Pigments: formula units × 0.308 ml/unit × base_vol_l (formula is per 1L)
     pigment_lines     = []
     pigment_total_pln = 0.0
     pigment_total_l   = 0.0
 
     for item in formula:
         code  = item["code"].upper()
-        units = item["units"]
+        units = float(item["units"])
 
         tinter = TINTERS.get(code) or TINTERS.get(code.replace('-',''))
         if not tinter:
@@ -119,12 +159,12 @@ def calculate_price(product_name, base_hint, pack_size, quantity, formula, margi
                     tinter = tv; break
 
         if not tinter:
-            pigment_lines.append({"code": code, "units": units, "error": f"Nieznany pigment: {code}"})
+            pigment_lines.append({"code": code, "units": units,
+                                  "error": f"Nieznany pigment: {code}"})
             continue
 
-        ml_per_1L   = units * ML_PER_UNIT
-        vol_l       = (ml_per_1L / 1000) * base_vol_l
-        cost_pln    = vol_l * tinter["price_pln_per_ltr"]
+        vol_l    = (units * ML_PER_UNIT / 1000) * base_vol_l
+        cost_pln = vol_l * tinter["price_pln_per_ltr"]
 
         pigment_total_pln += cost_pln
         pigment_total_l   += vol_l
@@ -147,8 +187,32 @@ def calculate_price(product_name, base_hint, pack_size, quantity, formula, margi
     total_gross = sell_gross_1pack * quantity
 
     pigment_sell_net = (pigment_total_pln / divisor) * quantity if pigment_total_pln > 0 else 0
+    base_label       = base_key.replace('_BAS','').replace('_BASE','').replace('-BAS','').replace('-BASE','')
 
-    base_label = base_key.replace('_BAS','').replace('_BASE','')
+    invoice_lines = [{
+        "lp": 1,
+        "name": f"{prod['product_name']} BASE {base_label} {commercial_vol_l}L",
+        "desc": "",
+        "qty": quantity,
+        "unit": "szt.",
+        "unit_price_net": round(base_price_pln / divisor, 2),
+        "value_net": round((base_price_pln / divisor) * quantity, 2),
+        "value_gross": round((base_price_pln / divisor) * (1 + vat_pct/100) * quantity, 2),
+        "vat_pct": vat_pct
+    }]
+
+    if pigment_total_l > 0:
+        invoice_lines.append({
+            "lp": 2,
+            "name": "MULTICOLOR SOLVENT FREE",
+            "desc": "  ".join(f"{p['code']} {p['units']}" for p in pigment_lines if 'error' not in p),
+            "qty": round(pigment_total_l * quantity, 4),
+            "unit": "LT",
+            "unit_price_net": round(pigment_total_pln / pigment_total_l, 2),
+            "value_net": round(pigment_sell_net, 2),
+            "value_gross": round(pigment_sell_net * (1 + vat_pct/100), 2),
+            "vat_pct": vat_pct
+        })
 
     return {
         "product_name": prod["product_name"],
@@ -160,7 +224,6 @@ def calculate_price(product_name, base_hint, pack_size, quantity, formula, margi
         "margin_pct": margin_pct,
         "vat_pct": vat_pct,
         "euro_rate": euro_rate,
-
         "purchase": {
             "base_pln": round(base_price_pln, 2),
             "pigment_pln": round(pigment_total_pln, 2),
@@ -168,32 +231,7 @@ def calculate_price(product_name, base_hint, pack_size, quantity, formula, margi
             "pigment_vol_l": round(pigment_total_l, 4),
             "pigment_lines": pigment_lines
         },
-
-        "invoice_lines": [
-            {
-                "lp": 1,
-                "name": f"{prod['product_name']} BASE {base_label} {commercial_vol_l}L",
-                "desc": "",
-                "qty": quantity,
-                "unit": "szt.",
-                "unit_price_net": round(base_price_pln / divisor, 2),
-                "value_net": round((base_price_pln / divisor) * quantity, 2),
-                "value_gross": round((base_price_pln / divisor) * (1 + vat_pct/100) * quantity, 2),
-                "vat_pct": vat_pct
-            },
-            *([] if pigment_total_l == 0 else [{
-                "lp": 2,
-                "name": "MULTICOLOR SOLVENT FREE",
-                "desc": "  ".join(f"{p['code']} {p['units']}" for p in pigment_lines if 'error' not in p),
-                "qty": round(pigment_total_l * quantity, 4),
-                "unit": "LT",
-                "unit_price_net": round(pigment_total_pln / pigment_total_l, 2) if pigment_total_l > 0 else 0,
-                "value_net": round(pigment_sell_net, 2),
-                "value_gross": round(pigment_sell_net * (1 + vat_pct/100), 2),
-                "vat_pct": vat_pct
-            }])
-        ],
-
+        "invoice_lines": invoice_lines,
         "summary": {
             "total_net": round(total_net, 2),
             "total_vat": round(total_vat, 2),
@@ -201,7 +239,6 @@ def calculate_price(product_name, base_hint, pack_size, quantity, formula, margi
             "margin_amount": round((sell_net_1pack - total_cost_pln) * quantity, 2)
         }
     }
-
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
@@ -212,14 +249,17 @@ def index():
 
 @app.route("/api/ocr", methods=["POST"])
 def api_ocr():
-    data = request.json
+    data       = request.json
     image_b64  = data.get("image_b64")
     media_type = data.get("media_type", "image/png")
     if not image_b64:
         return jsonify({"error": "Brak obrazu"}), 400
     try:
-        result = ocr_formula(image_b64, media_type)
-        return jsonify(result)
+        raw = ocr_formula(image_b64, media_type)
+        validated, errors = validate_formula(raw.get("formula", []))
+        raw["formula"]    = validated
+        raw["ocr_errors"] = errors
+        return jsonify(raw)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -235,7 +275,7 @@ def api_products():
 
 @app.route("/api/calculate", methods=["POST"])
 def api_calculate():
-    body = request.json
+    body   = request.json
     result = calculate_price(
         product_name = body.get("product_name", ""),
         base_hint    = body.get("base", ""),
