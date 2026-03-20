@@ -867,52 +867,39 @@ function renderResult(d) {
       <td class="num" style="color:var(--ink3)">${fmt(l.value_gross)}</td>
     </tr>`).join('');
 
+  const totalNet   = d.invoice_lines.reduce((s,l) => s + l.value_net, 0);
+  const totalGross = d.invoice_lines.reduce((s,l) => s + l.value_gross, 0);
+  const totalVat   = totalGross - totalNet;
+
   c.innerHTML = `
     <div class="res-product">${d.product_name} · ${d.base.replace(/[-_]/g,' ')} · ${d.commercial_vol_l} L × ${d.quantity} szt.</div>
     <div class="res-meta">Marża ${d.margin_pct}% &nbsp;·&nbsp; VAT ${d.vat_pct}% &nbsp;·&nbsp; EUR ${d.euro_rate} PLN</div>
 
-    <div class="sec-label">Pozycje fakturowe</div>
-    <table class="inv-table">
+    <table class="inv-table" style="margin-bottom:0">
       <thead><tr>
-        <th>Lp</th><th>Nazwa towaru</th>
+        <th>Lp</th>
+        <th>Nazwa towaru</th>
         <th style="text-align:right">Ilość</th>
         <th style="text-align:center">Jm</th>
         <th style="text-align:right">Cena netto</th>
         <th style="text-align:right">Wartość netto</th>
-        <th style="text-align:right">Brutto</th>
+        <th style="text-align:right">Wartość brutto</th>
       </tr></thead>
-      <tbody>${lines}</tbody>
+      <tbody>
+        ${lines}
+        <tr style="background:#fafaf8;font-weight:700;border-top:2px solid var(--border2)">
+          <td colspan="5" style="text-align:right;color:var(--ink2);font-size:11px;text-transform:uppercase;letter-spacing:1px">Razem</td>
+          <td class="num">${fmt(totalNet)} PLN</td>
+          <td class="num" style="color:var(--ink)">${fmt(totalGross)} PLN</td>
+        </tr>
+      </tbody>
     </table>
 
-    <div class="sec-label">Kalkulacja</div>
-    <div class="summary-box">
-      <div class="sum-row">
-        <span>Koszt zakupu — baza</span>
-        <span class="sv">${fmt(d.purchase.base_pln * d.quantity)} PLN</span>
+    <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+      <div class="margin-pill">↑ Marża: <strong>${fmt(d.summary.margin_amount)} PLN</strong></div>
+      <div class="margin-pill" style="background:var(--acc-bg);border-color:var(--acc-border);color:#7a6010">
+        Koszt zakupu: <strong>${fmt(d.purchase.total_pln * d.quantity)} PLN</strong>
       </div>
-      ${d.purchase.pigment_pln > 0 ? `
-      <div class="sum-row">
-        <span>Koszt zakupu — pigmenty (${(d.purchase.pigment_vol_l * d.quantity).toFixed(4)} L)</span>
-        <span class="sv">${fmt(d.purchase.pigment_pln * d.quantity)} PLN</span>
-      </div>` : ''}
-      <div class="sum-row">
-        <span>Łączny koszt zakupu</span>
-        <span class="sv">${fmt(d.purchase.total_pln * d.quantity)} PLN</span>
-      </div>
-      <div class="sum-row">
-        <span>Sprzedaż netto</span>
-        <span class="sv">${fmt(d.summary.total_net)} PLN</span>
-      </div>
-      <div class="sum-row total">
-        <span>Do zapłaty (brutto)</span>
-        <span class="sv">${fmt(d.summary.total_gross)} PLN</span>
-      </div>
-    </div>
-
-    <div class="margin-pill">
-      ↑ Marża: <strong>${fmt(d.summary.margin_amount)} PLN</strong>
-      &nbsp;·&nbsp;
-      Netto/szt: <strong>${fmt(d.summary.total_net / d.quantity)} PLN</strong>
     </div>
   `;
 }
