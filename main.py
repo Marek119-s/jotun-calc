@@ -18,7 +18,7 @@ ML_PER_UNIT = 0.308  # ml per Jotun unit
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 UNITS_MIN = 0.1
-UNITS_MAX = 200.0
+UNITS_MAX = 999.0
 
 
 def fix_ocr_number(s):
