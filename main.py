@@ -195,7 +195,7 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
             "desc": "  ".join(f"{p['code']} {p['units']}" for p in pigment_lines if 'error' not in p),
             "qty": round(pigment_total_l * quantity, 4),
             "unit": "LT",
-            "unit_price_net": round(pigment_total_pln / pigment_total_l, 2) if pigment_total_l > 0 else 0,
+            "unit_price_net": round((pigment_total_pln / divisor) / pigment_total_l, 2) if pigment_total_l > 0 else 0,
             "value_net": round(pig_sell_net, 2),
             "value_gross": round(pig_sell_net * (1 + vat_pct/100), 2),
             "vat_pct": vat_pct
