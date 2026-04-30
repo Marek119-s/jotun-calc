@@ -735,11 +735,19 @@ function autofillFromOCR(data) {
     document.getElementById('sel-product').value = prod.key;
     onProductChange();
     setTimeout(() => {
-      const hint = data.base.toUpperCase().replace(/[-_]/g,' ');
+      // Tłumacz aliasy baz z OCR na klucze JSON
+      const BASE_MAP = {
+        'GUL':'GUL','OXIDE YELLOW':'GUL','OXIDEYELLOW':'GUL',
+        'KLAR':'C','CLEAR':'C','TRANSPAR':'C','TRANSPAR.':'C','TRANSPARENT':'C',
+        'HVIT':'HVIT','VIT':'HVIT','WHITE':'HVIT',
+        'A':'A','B':'B','C':'C'
+      };
+      const rawHint = data.base.toUpperCase().replace(/[-_]/g,' ').trim();
+      const hint = BASE_MAP[rawHint] || rawHint;
       const selBase = document.getElementById('sel-base');
       for (const opt of selBase.options) {
-        const norm = opt.value.toUpperCase().replace(/[-_]/g,' ');
-        if (norm === hint || norm.startsWith(hint+' ') || norm.includes(hint)) {
+        const norm = opt.value.toUpperCase().replace(/[-_]/g,' ').replace(' BAS','').replace(' BASE','').trim();
+        if (norm === hint || norm.startsWith(hint+' ') || norm.includes(hint) || hint.includes(norm)) {
           selBase.value = opt.value; onBaseChange(); break;
         }
       }
