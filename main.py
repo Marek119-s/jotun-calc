@@ -81,9 +81,11 @@ Extract:
 1. product_name - full product name (e.g. "DEMIDEKK TERRASSLASYR")
 2. base - translated base code (e.g. "GUL", "HVIT", "A", "B", "C")
 3. formula - every pigment code with its numeric amount
+4. colour_name - the colour name if visible (e.g. "TERRASSEBRUN"), empty string if not shown
+5. colour_code - the colour number/code if visible (e.g. "90000"), empty string if not shown
 
 JSON only, no explanation:
-{"product_name":"DEMIDEKK TERRASSLASYR","base":"GUL","formula":[{"code":"RB","units":12},{"code":"SS","units":28}]}"""
+{"product_name":"DEMIDEKK TERRASSLASYR","base":"GUL","colour_name":"TERRASSEBRUN","colour_code":"90000","formula":[{"code":"RB","units":12},{"code":"SS","units":28}]}"""
 
     resp = client.chat.completions.create(
         model="gpt-4o",
