@@ -47,7 +47,7 @@ def validate_formula(raw_formula):
 
 
 def ocr_formula(image_b64, media_type):
-    prompt = """You are reading a screenshot from a Jotun paint tinting machine.
+    prompt = """You are reading a screenshot from a Jotun Multicolor tinting machine.
 
 The formula column shows entries like: HT003.7 OK011.8 RB040.3 SS068.7
 
@@ -61,8 +61,16 @@ Reading rules - THIS IS CRITICAL:
 
 NEVER drop the decimal. NEVER round. 003.7 is 3.7 not 4. 011.8 is 11.8 not 12.
 
+VALID pigment codes are ONLY these 2-letter codes:
+BD, BS, BV, FS, GE, GI, GO, GS, GV, HT, OK, RS, RB, RE, SS, SV, DE, MK, OX
+
+If you see a full name like "OXIDEYELLOW" or "OXIDE YELLOW" use code OX.
+If you see "BLACK" or "SCHWARZ" use code SS.
+If you see "WHITE" or "WEISS" use code SV.
+Always output only the 2-letter code, never a full name.
+
 Extract:
-1. product_name - e.g. "DEMIDEKK CLEANTECH"
+1. product_name - the full product name as shown (e.g. "DEMIDEKK TERRASSLASYR")
 2. base - single letter "A", "B", "C" or "VIT"
 3. formula - every pigment entry with exact float value
 
@@ -133,9 +141,24 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
     pigment_total_pln = 0.0
     total_units_sum   = 0.0
 
+    # Aliasy dla pełnych nazw pigmentów jakie może zwrócić OCR
+    PIGMENT_ALIASES = {
+        "OXIDEYELLOW": "OX", "OXIDE YELLOW": "OX", "OXIDGELB": "OX",
+        "OXIDERED": "RE", "OXIDE RED": "RE",
+        "BLACK": "SS", "SCHWARZ": "SS",
+        "WHITE": "SV", "WEISS": "SV",
+        "CARBON": "SS",
+    }
+
     for item in formula:
-        code  = item["code"].upper()
+        code  = item["code"].upper().strip()
         units = float(item["units"])
+
+        # Sprawdź alias (pełna nazwa → 2-literowy kod)
+        code = PIGMENT_ALIASES.get(code, code)
+        # Weź tylko pierwsze 2 litery jeśli kod jest dłuższy (np. OX12 → OX)
+        if len(code) > 2 and not TINTERS.get(code):
+            code = code[:2]
 
         tinter = TINTERS.get(code) or TINTERS.get(code.replace('-', ''))
         if not tinter:
@@ -161,6 +184,10 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
 
     # Volume: Excel ZAOKR(sum_units × 0.308 × commercial_vol / 1000, 2)
     pigment_total_l = round(total_units_sum * ML_PER_UNIT * commercial_vol_l / 1000, 2)
+
+    # Jesli formula byla podana ale zaden pigment nie przeszedl walidacji -> ostrzezenie
+    base_only_warning = len(formula) > 0 and pigment_total_pln == 0.0
+
 
     # Margin on base + pigments together
     total_cost_pln   = base_price_pln + pigment_total_pln
@@ -202,6 +229,7 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
         })
 
     return {
+        "base_only_warning": base_only_warning,
         "product_name": prod["product_name"],
         "base": base_key,
         "pack_size": pack_size,
