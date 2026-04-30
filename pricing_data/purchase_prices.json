@@ -415,6 +415,20 @@
             "price_eur_per_pack": 116.6,
             "unit": "szt."
           }
+        },
+        "KLAR_BASE": {
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_eur_per_pack": 40.9,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_eur_per_pack": 116.6,
+            "unit": "szt."
+          }
         }
       }
     },
@@ -436,6 +450,20 @@
           }
         },
         "GUL_BASE": {
+          "3L": {
+            "base_vol_l": 2.7,
+            "commercial_vol_l": 3.0,
+            "price_eur_per_pack": 36.1,
+            "unit": "szt."
+          },
+          "10L": {
+            "base_vol_l": 9.0,
+            "commercial_vol_l": 10.0,
+            "price_eur_per_pack": 102.9,
+            "unit": "szt."
+          }
+        },
+        "KLAR_BASE": {
           "3L": {
             "base_vol_l": 2.7,
             "commercial_vol_l": 3.0,
@@ -492,7 +520,7 @@
     "JOTAPROFF_TACKANDE_UTEGRUND": {
       "product_name": "JOTAPROFF TÄCKANDE UTEGRUND",
       "bases": {
-        "STANDARD": {
+        "HVIT": {
           "3L": {
             "base_vol_l": 2.7,
             "commercial_vol_l": 3.0,
@@ -578,116 +606,97 @@
     "BD": {
       "name": "MC PIGMENT BD",
       "code": "BD",
-      "price_eur_per_ltr": 222.9,
-      "price_pln_per_ltr": 958.47
+      "price_eur_per_ltr": 138.75
     },
     "BS": {
       "name": "MC PIGMENT BS",
       "code": "BS",
-      "price_eur_per_ltr": 146.15,
-      "price_pln_per_ltr": 628.45
+      "price_eur_per_ltr": 81.85
     },
     "BV": {
       "name": "MC PIGMENT BV",
       "code": "BV",
-      "price_eur_per_ltr": 84.7,
-      "price_pln_per_ltr": 364.21
+      "price_eur_per_ltr": 46.15
     },
     "FS": {
       "name": "MC PIGMENT FS",
       "code": "FS",
-      "price_eur_per_ltr": 138.45,
-      "price_pln_per_ltr": 595.34
+      "price_eur_per_ltr": 79.15
     },
     "GE": {
       "name": "MC PIGMENT GE",
       "code": "GE",
-      "price_eur_per_ltr": 230.5,
-      "price_pln_per_ltr": 991.15
+      "price_eur_per_ltr": 208.85
     },
     "GI": {
       "name": "MC PIGMENT GI",
       "code": "GI",
-      "price_eur_per_ltr": 115.4,
-      "price_pln_per_ltr": 496.22
+      "price_eur_per_ltr": 115.4
     },
     "GO": {
       "name": "MC PIGMENT GO",
       "code": "GO",
-      "price_eur_per_ltr": 222.9,
-      "price_pln_per_ltr": 958.47
+      "price_eur_per_ltr": 124.65
     },
     "GS": {
       "name": "MC PIGMENT GS",
       "code": "GS",
-      "price_eur_per_ltr": 202.85,
-      "price_pln_per_ltr": 872.26
+      "price_eur_per_ltr": 108.15
     },
     "GV": {
       "name": "MC PIGMENT GV",
       "code": "GV",
-      "price_eur_per_ltr": 107.75,
-      "price_pln_per_ltr": 463.33
+      "price_eur_per_ltr": 55.55
     },
     "HT": {
       "name": "MC PIGMENT HT",
       "code": "HT",
-      "price_eur_per_ltr": 69.25,
-      "price_pln_per_ltr": 297.78
+      "price_eur_per_ltr": 45.45
     },
     "OK": {
       "name": "MC PIGMENT OK",
       "code": "OK",
-      "price_eur_per_ltr": 54.05,
-      "price_pln_per_ltr": 232.42
+      "price_eur_per_ltr": 40.85
     },
     "RS": {
       "name": "MC PIGMENT RS",
       "code": "RS",
-      "price_eur_per_ltr": 230.5,
-      "price_pln_per_ltr": 991.15
+      "price_eur_per_ltr": 180.95
     },
     "RB": {
       "name": "MC PIGMENT RB",
       "code": "RB",
-      "price_eur_per_ltr": 46.35,
-      "price_pln_per_ltr": 199.31
+      "price_eur_per_ltr": 37.65
     },
     "RE": {
       "name": "MC PIGMENT RE",
       "code": "RE",
-      "price_eur_per_ltr": 261.3,
-      "price_pln_per_ltr": 1123.59
+      "price_eur_per_ltr": 155.0
     },
     "SS": {
       "name": "MC PIGMENT SS",
       "code": "SS",
-      "price_eur_per_ltr": 69.25,
-      "price_pln_per_ltr": 297.78
+      "price_eur_per_ltr": 40.75
     },
     "SV": {
       "name": "MC PIGMENT SV",
       "code": "SV",
-      "price_eur_per_ltr": 54.05,
-      "price_pln_per_ltr": 232.42
+      "price_eur_per_ltr": 29.4
     },
     "DE": {
       "name": "MC PIGMENT DE",
       "code": "DE",
-      "price_eur_per_ltr": 54.05,
-      "price_pln_per_ltr": 232.42
+      "price_eur_per_ltr": 54.05
     },
     "MK": {
       "name": "MC PIGMENT MK",
       "code": "MK",
-      "price_eur_per_ltr": 69.25,
-      "price_pln_per_ltr": 297.78
+      "price_eur_per_ltr": 69.25
     },
     "OX": {
       "name": "MC PIGMENT OX",
       "code": "OX",
-      "price_eur_per_ltr": 46.35,
-      "price_pln_per_ltr": 199.31
+      "price_eur_per_ltr": 46.35
     }
   }
 }
