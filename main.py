@@ -125,7 +125,7 @@ def calculate_price(product_name, base_hint, pack_size, quantity,
 
     base_vol_l       = pack["base_vol_l"]
     commercial_vol_l = pack["commercial_vol_l"]
-    base_price_pln   = pack["price_pln_per_pack"]
+    base_price_pln   = pack["price_eur_per_pack"] * euro_rate
 
     # Pigments
     # Excel formula: SUMA(jednostki × cena_EUR × kurs) × 0.308 / 1000 × commercial_vol
