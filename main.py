@@ -99,7 +99,9 @@ JSON only, no explanation:
 
 
 def normalize(s):
-    return re.sub(r'[-_]', ' ', s.upper().strip())
+    s = s.upper().strip()
+    s = s.replace('Ä','A').replace('Ö','O').replace('Å','A').replace('Ø','O').replace('Æ','AE')
+    return re.sub(r'[-_]', ' ', s)
 
 
 def find_product(product_name):
