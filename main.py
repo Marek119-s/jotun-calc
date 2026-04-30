@@ -118,7 +118,7 @@ def find_product(product_name):
 BASE_ALIASES = {
     "OXIDE YELLOW": "GUL", "OXIDEYELLOW": "GUL", "OX": "GUL",
     "HVIT":         "HVIT", "VIT": "HVIT", "WHITE": "HVIT",
-    "KLAR":         "C",    "CLEAR": "C", "TRANSPAR": "C", "TRANSPAR.": "C", "TRANSPARENT": "C",
+    "KLAR":         "KLAR", "CLEAR": "KLAR", "TRANSPAR": "KLAR", "TRANSPAR.": "KLAR", "TRANSPARENT": "KLAR",
     "A":            "A",    "B": "B", "C": "C",
 }
 
