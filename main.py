@@ -47,35 +47,43 @@ def validate_formula(raw_formula):
 
 
 def ocr_formula(image_b64, media_type):
-    prompt = """You are reading a screenshot from a Jotun Multicolor tinting machine.
+    prompt = """You are reading a screenshot from a Jotun colour selection software (not a mixing machine).
 
-The formula column shows entries like: HT003.7 OK011.8 RB040.3 SS068.7
+The screen shows a product list with columns in this order:
+  [BASE NAME] | [PRODUCT NAME] | [FORMULA] | [APPLICATION]
 
-Format is ALWAYS: [2 letters][3 digits].[1 digit]
+Example row:
+  OXIDE YELLOW | DEMIDEKK TERRASSLASYR | RB012 SS028 | Exterior
 
-Reading rules - THIS IS CRITICAL:
-  HT003.7 = code HT, units 3.7   (leading zeros: 003 = 3, decimal .7)
-  OK011.8 = code OK, units 11.8  (011 = 11, decimal .8)
-  RB040.3 = code RB, units 40.3  (040 = 40, decimal .3)
-  SS068.7 = code SS, units 68.7  (068 = 68, decimal .7)
+BASE NAME is the tinting base — it can be a colour name like "OXIDE YELLOW", "HVIT", "KLAR" etc.
+PRODUCT NAME is the paint product name.
+FORMULA is a list of pigment codes with amounts.
 
-NEVER drop the decimal. NEVER round. 003.7 is 3.7 not 4. 011.8 is 11.8 not 12.
+Formula format — whole numbers, 2-letter code + 3 digits:
+  RB012 = code RB, units 12
+  SS028 = code SS, units 28
+  OX005 = code OX, units 5
 
-VALID pigment codes are ONLY these 2-letter codes:
+ALSO handle mixing machine format with decimals if present:
+  HT003.7 = code HT, units 3.7
+  RB040.3 = code RB, units 40.3
+
+VALID pigment codes — ONLY these 2-letter codes:
 BD, BS, BV, FS, GE, GI, GO, GS, GV, HT, OK, RS, RB, RE, SS, SV, DE, MK, OX
 
-If you see a full name like "OXIDEYELLOW" or "OXIDE YELLOW" use code OX.
-If you see "BLACK" or "SCHWARZ" use code SS.
-If you see "WHITE" or "WEISS" use code SV.
-Always output only the 2-letter code, never a full name.
+BASE mapping — translate base name to short code:
+  OXIDE YELLOW / OXIDEYELLOW → GUL
+  HVIT / WHITE / WIT → HVIT
+  KLAR / CLEAR → KLAR
+  A / B / C → use as-is
 
 Extract:
-1. product_name - the full product name as shown (e.g. "DEMIDEKK TERRASSLASYR")
-2. base - single letter "A", "B", "C" or "VIT"
-3. formula - every pigment entry with exact float value
+1. product_name - full product name (e.g. "DEMIDEKK TERRASSLASYR")
+2. base - translated base code (e.g. "GUL", "HVIT", "A", "B", "C")
+3. formula - every pigment code with its numeric amount
 
-JSON only:
-{"product_name":"DEMIDEKK CLEANTECH","base":"C","formula":[{"code":"HT","units":3.7},{"code":"OK","units":11.8},{"code":"RB","units":40.3},{"code":"SS","units":68.7}]}"""
+JSON only, no explanation:
+{"product_name":"DEMIDEKK TERRASSLASYR","base":"GUL","formula":[{"code":"RB","units":12},{"code":"SS","units":28}]}"""
 
     resp = client.chat.completions.create(
         model="gpt-4o",
@@ -102,9 +110,19 @@ def find_product(product_name):
     return None, None
 
 
+# Aliasy baz: różne nazwy z różnych wersji oprogramowania Jotuna → klucz w JSON
+BASE_ALIASES = {
+    "OXIDE YELLOW": "GUL", "OXIDEYELLOW": "GUL", "OX": "GUL",
+    "HVIT":         "HVIT", "VIT": "HVIT", "WHITE": "HVIT",
+    "KLAR":         "STANDARD", "CLEAR": "STANDARD",
+}
+
 def find_base(prod, base_hint):
-    hint_norm = normalize(base_hint)
-    hint_up   = base_hint.upper().strip()
+    # Zastosuj alias jeśli istnieje
+    hint_up = base_hint.upper().strip()
+    hint_up = BASE_ALIASES.get(hint_up, hint_up)
+
+    hint_norm = normalize(hint_up)
     for bkey, bdata in prod.get("bases", {}).items():
         bkey_norm = normalize(bkey)
         if hint_norm == bkey_norm or hint_norm in bkey_norm:
