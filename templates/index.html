@@ -682,6 +682,7 @@ async function handleFile(file) {
 }
 
 async function runOCR(b64, mediaType) {
+  currentColour = {name: '', code: ''}; // reset przy nowym screenie
   const status = document.getElementById('ocr-status');
   const ocrText = document.getElementById('ocr-text');
   status.style.display = 'flex';
@@ -716,10 +717,20 @@ async function runOCR(b64, mediaType) {
 }
 
 function autofillFromOCR(data) {
-  const prod = PRODUCTS_LIST.find(p =>
-    p.name.toUpperCase().includes(data.product_name.toUpperCase()) ||
-    data.product_name.toUpperCase().includes(p.name.toUpperCase())
-  );
+  const ocrName = data.product_name.toUpperCase();
+  // Szukaj najlepszego dopasowania - preferuj najdłuższą wspólną nazwę
+  let bestProd = null, bestScore = 0;
+  for (const p of PRODUCTS_LIST) {
+    const pName = p.name.toUpperCase();
+    let score = 0;
+    if (pName === ocrName) score = 1000;
+    else if (ocrName.startsWith(pName)) score = pName.length;
+    else if (pName.startsWith(ocrName)) score = ocrName.length;
+    else if (ocrName.includes(pName)) score = pName.length * 0.8;
+    else if (pName.includes(ocrName)) score = ocrName.length * 0.8;
+    if (score > bestScore) { bestScore = score; bestProd = p; }
+  }
+  const prod = bestScore > 0 ? bestProd : null;
   if (prod) {
     document.getElementById('sel-product').value = prod.key;
     onProductChange();
