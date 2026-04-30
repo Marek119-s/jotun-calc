@@ -1,332 +1,935 @@
-import os
-import json
-import re
-from pathlib import Path
-from flask import Flask, request, jsonify, render_template
-from openai import OpenAI
-
-app = Flask(__name__)
-
-DATA_PATH = Path(__file__).parent / "pricing_data" / "purchase_prices.json"
-with open(DATA_PATH, encoding="utf-8") as f:
-    PRICING = json.load(f)
-
-PRODUCTS    = PRICING["products"]
-TINTERS     = PRICING["tinters"]
-ML_PER_UNIT = 0.308  # ml per Jotun unit
-
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
-UNITS_MIN = 0.1
-UNITS_MAX = 999.0
-
-
-def fix_ocr_number(s):
-    return s.replace('O','0').replace('o','0').replace('I','1').replace('l','1').replace('B','8')
-
-
-def validate_formula(raw_formula):
-    validated, errors = [], []
-    for item in raw_formula:
-        code      = str(item.get("code", "")).upper().strip()
-        units_raw = str(item.get("units", "")).strip()
-        units_fixed = fix_ocr_number(units_raw)
-        try:
-            units = float(units_fixed)
-        except ValueError:
-            errors.append(f"{code}{units_raw}: nie można odczytać liczby")
-            continue
-        if not re.match(r'^[A-Z]{2}$', code):
-            errors.append(f"Nieprawidłowy kod: '{code}'")
-            continue
-        if units < UNITS_MIN or units > UNITS_MAX:
-            errors.append(f"{code}: wartość {units} poza zakresem {UNITS_MIN}–{UNITS_MAX}")
-            continue
-        validated.append({"code": code, "units": units})
-    return validated, errors
-
-
-def ocr_formula(image_b64, media_type):
-    prompt = """You are reading a screenshot from a Jotun colour selection software (not a mixing machine).
-
-The screen shows a product list with columns in this order:
-  [BASE NAME] | [PRODUCT NAME] | [FORMULA] | [APPLICATION]
-
-Example row:
-  OXIDE YELLOW | DEMIDEKK TERRASSLASYR | RB012 SS028 | Exterior
-
-BASE NAME is the tinting base — it can be a colour name like "OXIDE YELLOW", "HVIT", "KLAR" etc.
-PRODUCT NAME is the paint product name.
-FORMULA is a list of pigment codes with amounts.
-
-Formula format — whole numbers, 2-letter code + 3 digits:
-  RB012 = code RB, units 12
-  SS028 = code SS, units 28
-  OX005 = code OX, units 5
-
-ALSO handle mixing machine format with decimals if present:
-  HT003.7 = code HT, units 3.7
-  RB040.3 = code RB, units 40.3
-
-VALID pigment codes — ONLY these 2-letter codes:
-BD, BS, BV, FS, GE, GI, GO, GS, GV, HT, OK, RS, RB, RE, SS, SV, DE, MK, OX
-
-BASE mapping — translate base name to short code:
-  OXIDE YELLOW / OXIDEYELLOW → GUL
-  HVIT / WHITE / WIT → HVIT
-  KLAR / CLEAR → KLAR
-  A / B / C → use as-is
-
-Extract:
-1. product_name - full product name (e.g. "DEMIDEKK TERRASSLASYR")
-2. base - translated base code (e.g. "GUL", "HVIT", "A", "B", "C")
-3. formula - every pigment code with its numeric amount
-4. colour_name - the colour name if visible (e.g. "TERRASSEBRUN"), empty string if not shown
-5. colour_code - the colour number/code if visible (e.g. "90000"), empty string if not shown
-
-JSON only, no explanation:
-{"product_name":"DEMIDEKK TERRASSLASYR","base":"GUL","colour_name":"TERRASSEBRUN","colour_code":"90000","formula":[{"code":"RB","units":12},{"code":"SS","units":28}]}"""
-
-    resp = client.chat.completions.create(
-        model="gpt-4o",
-        max_tokens=400,
-        messages=[{"role": "user", "content": [
-            {"type": "image_url", "image_url": {"url": f"data:{media_type};base64,{image_b64}"}},
-            {"type": "text", "text": prompt}
-        ]}]
-    )
-    raw = resp.choices[0].message.content.strip()
-    raw = re.sub(r'^```json|```$', '', raw, flags=re.MULTILINE).strip()
-    return json.loads(raw)
-
-
-def normalize(s):
-    s = s.upper().strip()
-    s = s.replace('Ä','A').replace('Ö','O').replace('Å','A').replace('Ø','O').replace('Æ','AE')
-    return re.sub(r'[-_]', ' ', s)
-
-
-def find_product(product_name):
-    name_norm = normalize(product_name)
-    for key, prod in PRODUCTS.items():
-        if normalize(prod["product_name"]) in name_norm or name_norm in normalize(prod["product_name"]):
-            return key, prod
-    return None, None
-
-
-# Aliasy baz: różne nazwy z różnych wersji oprogramowania Jotuna → klucz w JSON
-BASE_ALIASES = {
-    "OXIDE YELLOW": "GUL", "OXIDEYELLOW": "GUL", "OX": "GUL",
-    "HVIT":         "HVIT", "VIT": "HVIT", "WHITE": "HVIT",
-    "KLAR":         "STANDARD", "CLEAR": "STANDARD",
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jotun · Kalkulator Cen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f2ee;
+  --white: #ffffff;
+  --ink: #1a1a18;
+  --ink2: #5a5a52;
+  --ink3: #a0a098;
+  --border: #dddbd5;
+  --border2: #c8c5bc;
+  --acc: #c8a820;
+  --acc-bg: #fdf8e8;
+  --acc-border: #ede0a0;
+  --blue: #1a4a8a;
+  --blue-bg: #eef3fb;
+  --green: #1a7a3a;
+  --green-bg: #eaf5ee;
+  --red: #c03020;
+  --red-bg: #fdeeed;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+  --r: 10px;
 }
 
-def find_base(prod, base_hint):
-    # Zastosuj alias jeśli istnieje
-    hint_up = base_hint.upper().strip()
-    hint_up = BASE_ALIASES.get(hint_up, hint_up)
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-    hint_norm = normalize(hint_up)
-    for bkey, bdata in prod.get("bases", {}).items():
-        bkey_norm = normalize(bkey)
-        if hint_norm == bkey_norm or hint_norm in bkey_norm:
-            return bkey, bdata
-        if re.match(r'^[A-Z]$', hint_up) and bkey_norm.startswith(hint_up + ' '):
-            return bkey, bdata
-    return None, None
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
 
+/* ─ HEADER ─ */
+header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+}
 
-def calculate_price(product_name, base_hint, pack_size, quantity,
-                    formula, margin_pct, vat_pct, euro_rate=4.3):
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-    prod_key, prod = find_product(product_name)
-    if not prod:
-        return {"error": f"Nie znaleziono produktu: {product_name}"}
+.logo-mark {
+  width: 30px; height: 30px;
+  background: var(--ink);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
 
-    base_key, base_packs = find_base(prod, base_hint)
-    if not base_packs:
-        available = list(prod.get("bases", {}).keys())
-        return {"error": f"Nie znaleziono bazy '{base_hint}'. Dostępne: {available}"}
+.logo h1 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -.3px;
+}
 
-    pack = base_packs.get(pack_size)
-    if not pack:
-        available = list(base_packs.keys())
-        return {"error": f"Brak opakowania {pack_size}. Dostępne: {available}"}
+.version {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--ink3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
 
-    base_vol_l       = pack["base_vol_l"]
-    commercial_vol_l = pack["commercial_vol_l"]
-    base_price_pln   = pack["price_eur_per_pack"] * euro_rate
+/* ─ LAYOUT ─ */
+.wrap {
+  max-width: 1160px;
+  margin: 32px auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 20px;
+  align-items: start;
+}
 
-    # Pigments
-    # Excel formula: SUMA(jednostki × cena_EUR × kurs) × 0.308 / 1000 × commercial_vol
-    pigment_lines     = []
-    pigment_total_pln = 0.0
-    total_units_sum   = 0.0
+/* ─ CARDS ─ */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.card:last-child { margin-bottom: 0; }
 
-    # Aliasy dla pełnych nazw pigmentów jakie może zwrócić OCR
-    PIGMENT_ALIASES = {
-        "OXIDEYELLOW": "OX", "OXIDE YELLOW": "OX", "OXIDGELB": "OX",
-        "OXIDERED": "RE", "OXIDE RED": "RE",
-        "BLACK": "SS", "SCHWARZ": "SS",
-        "WHITE": "SV", "WEISS": "SV",
-        "CARBON": "SS",
+.card-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fafaf8;
+}
+
+.card-head h2 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--ink2);
+}
+
+.card-body { padding: 20px; }
+
+/* ─ SETTINGS ROW ─ */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+/* ─ TABS ─ */
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: var(--bg);
+  color: var(--ink2);
+  transition: all .15s;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.tab:last-child { border-right: none; }
+.tab:hover { background: #eeece8; color: var(--ink); }
+.tab.active {
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ─ FIELDS ─ */
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+
+label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink2);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 5px;
+}
+
+input, select {
+  width: 100%;
+  background: var(--white);
+  border: 1px solid var(--border2);
+  color: var(--ink);
+  padding: 9px 11px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  appearance: none;
+  box-shadow: var(--shadow-sm);
+}
+
+input:focus, select:focus {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px var(--acc-border);
+}
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a5a52' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  padding-right: 32px;
+}
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ─ UPLOAD ZONE ─ */
+.upload-zone {
+  border: 2px dashed var(--border2);
+  border-radius: var(--r);
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+  margin-bottom: 14px;
+  background: #fafaf8;
+}
+.upload-zone:hover, .upload-zone.drag {
+  border-color: var(--acc);
+  background: var(--acc-bg);
+}
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-zone .uz-icon { font-size: 24px; margin-bottom: 6px; }
+.upload-zone p { font-size: 13px; color: var(--ink2); }
+.upload-zone small { font-size: 11px; color: var(--ink3); margin-top: 3px; display: block; }
+
+#preview-wrap { margin-bottom: 12px; display: none; }
+#preview-wrap img { width: 100%; border-radius: 7px; border: 1px solid var(--border); }
+
+/* ─ OCR PILL ─ */
+.ocr-pill {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--blue-bg);
+  border: 1px solid #c0d4f0;
+  border-radius: 7px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--blue);
+  line-height: 1.5;
+}
+.ocr-pill .label { font-weight: 700; white-space: nowrap; margin-top: 1px; }
+#ocr-status { display: none; }
+
+/* ─ FORMULA TAGS ─ */
+.formula-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+  min-height: 28px;
+}
+.ftag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 15px;
+  background: var(--blue-bg);
+  border: 1px solid #c0d4f0;
+  color: var(--blue);
+  border-radius: 6px;
+  padding: 9px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+.ftag .rm {
+  cursor: pointer;
+  color: var(--ink3);
+  font-size: 14px;
+  line-height: 1;
+  margin-left: 2px;
+  transition: color .1s;
+}
+.ftag .rm:hover { color: var(--red); }
+
+.add-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 36px;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+.add-row input { font-family: 'IBM Plex Mono', monospace; }
+
+.icon-btn {
+  width: 36px; height: 37px;
+  background: var(--ink);
+  border: none;
+  border-radius: 7px;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity .15s;
+}
+.icon-btn:hover { opacity: .8; }
+
+/* ─ DIVIDER ─ */
+hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* ─ CALC BTN ─ */
+.btn-calc {
+  width: 100%;
+  padding: 13px;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: .2px;
+}
+.btn-calc:hover { opacity: .85; }
+.btn-calc:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ─ RESULTS ─ */
+.result-empty {
+  padding: 64px 20px;
+  text-align: center;
+  color: var(--ink3);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.result-empty .big { font-size: 36px; margin-bottom: 14px; }
+
+/* Result header */
+.res-product {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+  letter-spacing: -.3px;
+}
+.res-meta {
+  font-size: 12px;
+  color: var(--ink3);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 20px;
+}
+
+/* Invoice table */
+.sec-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--ink3);
+  margin-bottom: 10px;
+}
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.inv-table th {
+  text-align: left;
+  padding: 9px 12px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--ink3);
+  background: #fafaf8;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+.inv-table td {
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.inv-table tr:last-child td { border-bottom: none; }
+.inv-table .lp { color: var(--ink3); font-family: 'IBM Plex Mono', monospace; font-size: 11px; width: 28px; }
+.inv-table .iname { font-weight: 600; color: var(--ink); }
+.inv-table .idesc { font-size: 11px; color: var(--ink3); font-family: 'IBM Plex Mono', monospace; margin-top: 3px; }
+.inv-table .num { font-family: 'IBM Plex Mono', monospace; text-align: right; white-space: nowrap; font-weight: 500; }
+.inv-table .uc { color: var(--ink3); font-size: 12px; text-align: center; }
+
+/* Summary */
+.summary-box {
+  background: #fafaf8;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 9px 16px;
+  font-size: 13px;
+  color: var(--ink2);
+  border-bottom: 1px solid var(--border);
+}
+.sum-row:last-child { border-bottom: none; }
+.sum-row .sv {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+}
+.sum-row.total {
+  background: var(--ink);
+  color: #fff;
+  padding: 14px 16px;
+}
+.sum-row.total .sv {
+  color: #f0d050;
+  font-size: 20px;
+  font-weight: 600;
+}
+.sum-row.total span:first-child {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.margin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--green-bg);
+  border: 1px solid #b0dfc0;
+  color: var(--green);
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+}
+
+.err {
+  background: var(--red-bg);
+  border: 1px solid #f0c0b8;
+  color: var(--red);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 13px;
+}
+
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 800px) { .wrap { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">JT</div>
+    <h1>Kalkulator Cen Zakupu</h1>
+  </div>
+  <span class="version">v1.1</span>
+</header>
+
+<div class="wrap">
+
+  <!-- LEFT COLUMN -->
+  <div>
+
+    <!-- Settings -->
+    <div class="card">
+      <div class="card-head"><h2>⚙ Ustawienia</h2></div>
+      <div class="card-body">
+        <div class="settings-grid">
+          <div class="field">
+            <label>Kurs EUR</label>
+            <input type="number" id="euro-rate" value="4.30" step="0.01" min="1">
+          </div>
+          <div class="field">
+            <label>Marża %</label>
+            <input type="number" id="margin-num" value="30" min="0" max="99">
+          </div>
+          <div class="field">
+            <label>VAT %</label>
+            <input type="number" id="vat-num" value="23" min="0" max="100">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product -->
+    <div class="card">
+      <div class="card-head"><h2>🎨 Produkt</h2></div>
+      <div class="card-body">
+
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('mixed')">🖌&nbsp; Mieszana</button>
+          <button class="tab" onclick="switchTab('ready')">🪣&nbsp; Gotowa</button>
+        </div>
+
+        <!-- MIXED -->
+        <div id="tab-mixed">
+          <div class="upload-zone" id="upload-zone">
+            <input type="file" id="file-input" accept="image/*" onchange="handleFile(this.files[0])">
+            <div class="uz-icon">📷</div>
+            <p>Przeciągnij, kliknij lub <strong>Ctrl+V</strong></p>
+            <small>Screenshot z programu do mieszania</small>
+          </div>
+          <div id="preview-wrap"><img id="preview-img" src=""></div>
+          <div id="ocr-status" class="ocr-pill">
+            <span class="label">OCR</span>
+            <span id="ocr-text">—</span>
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>Produkt</label>
+              <select id="sel-product" onchange="onProductChange()">
+                <option value="">— wybierz —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Baza</label>
+              <select id="sel-base" onchange="onBaseChange()">
+                <option value="">— wybierz —</option>
+              </select>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label>Opakowanie</label>
+              <select id="sel-pack">
+                <option value="">— wybierz —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Ilość (szt.)</label>
+              <input type="number" id="qty" value="1" min="1">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Formuła pigmentów</label>
+            <div class="formula-tags" id="formula-tags"></div>
+            <div style="margin-top:8px">
+              <button onclick="toggleAddRow()" style="background:none;border:none;font-size:12px;color:var(--ink3);cursor:pointer;padding:0;font-family:inherit">+ dodaj ręcznie</button>
+              <div id="add-row-wrap" style="display:none;margin-top:8px">
+                <div class="add-row">
+                  <input type="text" id="pig-code" placeholder="np. HT" style="text-transform:uppercase;font-family:'IBM Plex Mono',monospace">
+                  <input type="number" id="pig-units" placeholder="88" min="1" step="0.1">
+                  <button class="icon-btn" onclick="addPigment()" title="Dodaj">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- READY -->
+        <div id="tab-ready" style="display:none">
+          <div class="field">
+            <label>Produkt</label>
+            <select id="sel-ready-product" onchange="onReadyProductChange()">
+              <option value="">— wybierz —</option>
+            </select>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label>Opakowanie</label>
+              <select id="sel-ready-pack">
+                <option value="">— wybierz —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Ilość (szt.)</label>
+              <input type="number" id="qty-ready" value="1" min="1">
+            </div>
+          </div>
+        </div>
+
+        <hr>
+        <button class="btn-calc" id="calc-btn" onclick="calculate()">Oblicz cenę →</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head"><h2>📋 Specyfikacja towarowa</h2></div>
+    <div class="card-body">
+      <div class="result-empty" id="result-empty">
+        <div class="big">🧮</div>
+        Wybierz produkt i parametry,<br>następnie kliknij <strong>Oblicz cenę</strong>.
+      </div>
+      <div id="result-content" style="display:none"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let PRODUCTS_LIST = [];
+let pigments = [];
+let currentColour = {name: '', code: ''};
+let currentTab = 'mixed';
+
+async function init() {
+  const res = await fetch('/api/products');
+  PRODUCTS_LIST = await res.json();
+  PRODUCTS_LIST.sort((a,b) => a.name.localeCompare(b.name));
+
+  const selMixed = document.getElementById('sel-product');
+  const selReady = document.getElementById('sel-ready-product');
+
+  PRODUCTS_LIST.forEach(p => {
+    const keys = Object.keys(p.bases);
+    const isStandard = keys.length === 1 && keys[0] === 'STANDARD';
+    if (!isStandard && keys.length > 0) {
+      const o = document.createElement('option');
+      o.value = p.key; o.textContent = p.name;
+      selMixed.appendChild(o);
     }
+    if (isStandard) {
+      const o = document.createElement('option');
+      o.value = p.key; o.textContent = p.name;
+      selReady.appendChild(o);
+    }
+  });
+}
 
-    for item in formula:
-        code  = item["code"].upper().strip()
-        units = float(item["units"])
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-mixed').style.display = tab === 'mixed' ? '' : 'none';
+  document.getElementById('tab-ready').style.display  = tab === 'ready'  ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0&&tab==='mixed')||(i===1&&tab==='ready'));
+  });
+}
 
-        # Sprawdź alias (pełna nazwa → 2-literowy kod)
-        code = PIGMENT_ALIASES.get(code, code)
-        # Weź tylko pierwsze 2 litery jeśli kod jest dłuższy (np. OX12 → OX)
-        if len(code) > 2 and not TINTERS.get(code):
-            code = code[:2]
+// Upload / OCR
+const zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+document.addEventListener('paste', e => {
+  for (const item of (e.clipboardData?.items || [])) {
+    if (item.type.startsWith('image/')) {
+      const f = item.getAsFile();
+      if (f) { zone.classList.add('drag'); setTimeout(() => zone.classList.remove('drag'), 400); handleFile(f); }
+      break;
+    }
+  }
+});
 
-        tinter = TINTERS.get(code) or TINTERS.get(code.replace('-', ''))
-        if not tinter:
-            for tk, tv in TINTERS.items():
-                if '-' in tk and tk.split('-')[0] == code[:2]:
-                    tinter = tv
-                    break
+async function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    document.getElementById('preview-img').src = e.target.result;
+    document.getElementById('preview-wrap').style.display = '';
+    await runOCR(e.target.result.split(',')[1], file.type || 'image/png');
+  };
+  reader.readAsDataURL(file);
+}
 
-        if not tinter:
-            pigment_lines.append({"code": code, "units": units, "error": f"Nieznany pigment: {code}"})
-            continue
+async function runOCR(b64, mediaType) {
+  const status = document.getElementById('ocr-status');
+  const ocrText = document.getElementById('ocr-text');
+  status.style.display = 'flex';
+  status.style.background = 'var(--blue-bg)';
+  status.style.borderColor = 'var(--blue-border)';
+  status.style.color = 'var(--blue)';
+  ocrText.innerHTML = '⏳ Analizuję obraz...';
+  try {
+    const res = await fetch('/api/ocr', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({image_b64: b64, media_type: mediaType})
+    });
+    const data = await res.json();
+    if (data.error) {
+      ocrText.innerHTML = '⚠ ' + data.error;
+      status.style.background = 'var(--red-bg)';
+      status.style.borderColor = '#f0b0a8';
+      status.style.color = 'var(--red)';
+      return;
+    }
+    const formulaStr = data.formula.map(f => `<b>${f.code}</b>${f.units}`).join(' &nbsp;');
+    const errStr = (data.ocr_errors && data.ocr_errors.length)
+      ? `<br><span style="color:var(--red);font-weight:600">⚠ Błędy OCR: ${data.ocr_errors.join(' | ')}</span>`
+      : ' ✓';
+    ocrText.innerHTML = `${data.product_name} · Baza <b>${data.base}</b> · ${formulaStr}${errStr}`;
+    autofillFromOCR(data);
+  } catch(e) {
+    ocrText.innerHTML = '⚠ ' + e.message;
+    status.style.background = 'var(--red-bg)';
+    status.style.color = 'var(--red)';
+  }
+}
 
-        total_units_sum += units
-        cost_pln = units * tinter["price_eur_per_ltr"] * euro_rate * ML_PER_UNIT / 1000 * commercial_vol_l
-        pigment_total_pln += cost_pln
-
-        pigment_lines.append({
-            "code": tinter["code"],
-            "units": units,
-            "price_eur_per_ltr": tinter["price_eur_per_ltr"],
-            "cost_pln": round(cost_pln, 4)
-        })
-
-    # Volume: Excel ZAOKR(sum_units × 0.308 × commercial_vol / 1000, 2)
-    pigment_total_l = round(total_units_sum * ML_PER_UNIT * commercial_vol_l / 1000, 2)
-
-    # Jesli formula byla podana ale zaden pigment nie przeszedl walidacji -> ostrzezenie
-    base_only_warning = len(formula) > 0 and pigment_total_pln == 0.0
-
-
-    # Margin on base + pigments together
-    total_cost_pln   = base_price_pln + pigment_total_pln
-    divisor          = 1 - (margin_pct / 100)
-    sell_net_1pack   = total_cost_pln / divisor if divisor > 0 else total_cost_pln
-    vat_1pack        = sell_net_1pack * (vat_pct / 100)
-    sell_gross_1pack = sell_net_1pack + vat_1pack
-
-    total_net   = sell_net_1pack * quantity
-    total_vat   = vat_1pack * quantity
-    total_gross = sell_gross_1pack * quantity
-
-    base_label = base_key.replace('_BAS','').replace('_BASE','').replace('-BAS','').replace('-BASE','')
-
-    invoice_lines = [{
-        "lp": 1,
-        "name": f"{prod['product_name']} BASE {base_label} {commercial_vol_l}L",
-        "desc": "",
-        "qty": quantity,
-        "unit": "szt.",
-        "unit_price_net": round(base_price_pln / divisor, 2),
-        "value_net": round((base_price_pln / divisor) * quantity, 2),
-        "value_gross": round((base_price_pln / divisor) * (1 + vat_pct/100) * quantity, 2),
-        "vat_pct": vat_pct
-    }]
-
-    if pigment_total_l > 0:
-        pig_sell_net = (pigment_total_pln / divisor) * quantity
-        invoice_lines.append({
-            "lp": 2,
-            "name": "MULTICOLOR SOLVENT FREE",
-            "desc": "  ".join(f"{p['code']} {p['units']}" for p in pigment_lines if 'error' not in p),
-            "qty": round(pigment_total_l * quantity, 4),
-            "unit": "LT",
-            "unit_price_net": round((pigment_total_pln / divisor) / pigment_total_l, 2) if pigment_total_l > 0 else 0,
-            "value_net": round(pig_sell_net, 2),
-            "value_gross": round(pig_sell_net * (1 + vat_pct/100), 2),
-            "vat_pct": vat_pct
-        })
-
-    return {
-        "base_only_warning": base_only_warning,
-        "product_name": prod["product_name"],
-        "base": base_key,
-        "pack_size": pack_size,
-        "base_vol_l": base_vol_l,
-        "commercial_vol_l": commercial_vol_l,
-        "quantity": quantity,
-        "margin_pct": margin_pct,
-        "vat_pct": vat_pct,
-        "euro_rate": euro_rate,
-        "purchase": {
-            "base_pln": round(base_price_pln, 2),
-            "pigment_pln": round(pigment_total_pln, 2),
-            "total_pln": round(total_cost_pln, 2),
-            "pigment_vol_l": pigment_total_l,
-            "pigment_lines": pigment_lines
-        },
-        "invoice_lines": invoice_lines,
-        "summary": {
-            "total_net": round(total_net, 2),
-            "total_vat": round(total_vat, 2),
-            "total_gross": round(total_gross, 2),
-            "margin_amount": round((sell_net_1pack - total_cost_pln) * quantity, 2)
+function autofillFromOCR(data) {
+  const prod = PRODUCTS_LIST.find(p =>
+    p.name.toUpperCase().includes(data.product_name.toUpperCase()) ||
+    data.product_name.toUpperCase().includes(p.name.toUpperCase())
+  );
+  if (prod) {
+    document.getElementById('sel-product').value = prod.key;
+    onProductChange();
+    setTimeout(() => {
+      const hint = data.base.toUpperCase().replace(/[-_]/g,' ');
+      const selBase = document.getElementById('sel-base');
+      for (const opt of selBase.options) {
+        const norm = opt.value.toUpperCase().replace(/[-_]/g,' ');
+        if (norm === hint || norm.startsWith(hint+' ') || norm.includes(hint)) {
+          selBase.value = opt.value; onBaseChange(); break;
         }
-    }
+      }
+    }, 60);
+  }
+  pigments = data.formula.map(f => ({code: f.code.toUpperCase(), units: f.units}));
+  renderPigments();
+  // Zapamiętaj kolor z OCR
+  currentColour = {
+    name: data.colour_name || '',
+    code: data.colour_code || ''
+  };
+}
 
+function resetColour() { currentColour = {name: '', code: ''}; }
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+function onProductChange() {
+  const key = document.getElementById('sel-product').value;
+  const selBase = document.getElementById('sel-base');
+  const selPack = document.getElementById('sel-pack');
+  selBase.innerHTML = '<option value="">— wybierz —</option>';
+  selPack.innerHTML = '<option value="">— wybierz —</option>';
+  if (!key) return;
+  const prod = PRODUCTS_LIST.find(p => p.key === key);
+  Object.keys(prod.bases).forEach(bkey => {
+    const o = document.createElement('option');
+    o.value = bkey; o.textContent = bkey.replace(/[-_]/g,' ');
+    selBase.appendChild(o);
+  });
+  if (Object.keys(prod.bases).length === 1) {
+    selBase.value = Object.keys(prod.bases)[0]; onBaseChange();
+  }
+}
 
+function onBaseChange() {
+  const key = document.getElementById('sel-product').value;
+  const baseKey = document.getElementById('sel-base').value;
+  const selPack = document.getElementById('sel-pack');
+  selPack.innerHTML = '<option value="">— wybierz —</option>';
+  if (!key || !baseKey) return;
+  const prod = PRODUCTS_LIST.find(p => p.key === key);
+  const packs = (prod?.bases[baseKey] || []).sort((a,b) => parseFloat(a)-parseFloat(b));
+  packs.forEach(pk => {
+    const o = document.createElement('option');
+    o.value = pk; o.textContent = pk;
+    selPack.appendChild(o);
+  });
+}
 
-@app.route("/api/ocr", methods=["POST"])
-def api_ocr():
-    data       = request.json
-    image_b64  = data.get("image_b64")
-    media_type = data.get("media_type", "image/png")
-    if not image_b64:
-        return jsonify({"error": "Brak obrazu"}), 400
-    try:
-        raw = ocr_formula(image_b64, media_type)
-        validated, errors = validate_formula(raw.get("formula", []))
-        raw["formula"]    = validated
-        raw["ocr_errors"] = errors
-        return jsonify(raw)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+function onReadyProductChange() {
+  const key = document.getElementById('sel-ready-product').value;
+  const selPack = document.getElementById('sel-ready-pack');
+  selPack.innerHTML = '<option value="">— wybierz —</option>';
+  if (!key) return;
+  const prod = PRODUCTS_LIST.find(p => p.key === key);
+  (prod?.bases['STANDARD'] || []).sort((a,b) => parseFloat(a)-parseFloat(b)).forEach(pk => {
+    const o = document.createElement('option');
+    o.value = pk; o.textContent = pk;
+    selPack.appendChild(o);
+  });
+}
 
+function toggleAddRow() {
+  const wrap = document.getElementById('add-row-wrap');
+  wrap.style.display = wrap.style.display === 'none' ? '' : 'none';
+}
 
-@app.route("/api/products", methods=["GET"])
-def api_products():
-    out = []
-    for key, prod in PRODUCTS.items():
-        bases = {bkey: list(bpacks.keys()) for bkey, bpacks in prod.get("bases", {}).items()}
-        out.append({"key": key, "name": prod["product_name"], "bases": bases})
-    return jsonify(out)
+function addPigment() {
+  const code = document.getElementById('pig-code').value.trim().toUpperCase();
+  const units = parseInt(document.getElementById('pig-units').value);
+  if (!code || isNaN(units) || units <= 0) return;
+  pigments.push({code, units});
+  renderPigments();
+  document.getElementById('pig-code').value = '';
+  document.getElementById('pig-units').value = '';
+  document.getElementById('pig-code').focus();
+}
+document.getElementById('pig-units').addEventListener('keydown', e => { if (e.key==='Enter') addPigment(); });
 
+function removePigment(i) { pigments.splice(i,1); renderPigments(); }
+function renderPigments() {
+  document.getElementById('formula-tags').innerHTML = pigments.map((p,i) =>
+    `<span class="ftag">${p.code}&nbsp;<strong>${p.units}</strong><span class="rm" onclick="removePigment(${i})">×</span></span>`
+  ).join('');
+}
 
-@app.route("/api/calculate", methods=["POST"])
-def api_calculate():
-    body   = request.json
-    result = calculate_price(
-        product_name = body.get("product_name", ""),
-        base_hint    = body.get("base", ""),
-        pack_size    = body.get("pack_size", ""),
-        quantity     = int(body.get("quantity", 1)),
-        formula      = body.get("formula", []),
-        margin_pct   = float(body.get("margin_pct", 30)),
-        vat_pct      = float(body.get("vat_pct", 23)),
-        euro_rate    = float(body.get("euro_rate", 4.3))
-    )
-    if "error" in result:
-        return jsonify(result), 400
-    return jsonify(result)
+async function calculate() {
+  const btn = document.getElementById('calc-btn');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>&nbsp;Obliczam...';
 
+  const body = currentTab === 'mixed' ? {
+    mode: 'mixed',
+    product_name: document.getElementById('sel-product').value,
+    base: document.getElementById('sel-base').value,
+    pack_size: document.getElementById('sel-pack').value,
+    quantity: parseInt(document.getElementById('qty').value) || 1,
+    formula: pigments,
+    margin_pct: parseFloat(document.getElementById('margin-num').value) || 30,
+    vat_pct:    parseFloat(document.getElementById('vat-num').value) || 23,
+    euro_rate:  parseFloat(document.getElementById('euro-rate').value) || 4.3
+  } : {
+    mode: 'ready',
+    product_name: document.getElementById('sel-ready-product').value,
+    base: 'STANDARD',
+    pack_size: document.getElementById('sel-ready-pack').value,
+    quantity: parseInt(document.getElementById('qty-ready').value) || 1,
+    formula: [],
+    margin_pct: parseFloat(document.getElementById('margin-num').value) || 30,
+    vat_pct:    parseFloat(document.getElementById('vat-num').value) || 23,
+    euro_rate:  parseFloat(document.getElementById('euro-rate').value) || 4.3
+  };
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+  try {
+    const res = await fetch('/api/calculate', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.error) showError(data.error);
+    else renderResult(data);
+  } catch(e) { showError(e.message); }
+
+  btn.disabled = false; btn.innerHTML = 'Oblicz cenę →';
+}
+
+function renderResult(d) {
+  document.getElementById('result-empty').style.display = 'none';
+  const c = document.getElementById('result-content');
+  c.style.display = '';
+
+  const fmt = n => n==null ? '—' : n.toLocaleString('pl-PL', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  const lines = d.invoice_lines.map(l => `
+    <tr>
+      <td class="lp">${l.lp}</td>
+      <td>
+        <div class="iname">${l.name}</div>
+        ${l.desc ? `<div class="idesc">${l.desc}</div>` : ''}
+      </td>
+      <td class="num">${l.qty}</td>
+      <td class="uc">${l.unit}</td>
+      <td class="num">${fmt(l.unit_price_net)}</td>
+      <td class="num">${fmt(l.value_net)}</td>
+      <td class="num" style="color:var(--ink3)">${fmt(l.value_gross)}</td>
+    </tr>`).join('');
+
+  const totalNet   = d.invoice_lines.reduce((s,l) => s + l.value_net, 0);
+  const totalGross = d.invoice_lines.reduce((s,l) => s + l.value_gross, 0);
+  const totalVat   = totalGross - totalNet;
+
+  const warningBanner = d.base_only_warning ? `
+    <div style="background:#fff8e1;border:1px solid #f9a825;border-radius:8px;padding:10px 14px;margin-bottom:12px;color:#7a5800;font-size:13px">
+      &#9888; <strong>Nie uda&#322;o si&#281; odczyta&#263; formu&#322;y koloru.</strong> Cena dotyczy wy&#322;&#261;cznie samej bazy bez pigment&#243;w.
+      Dodaj pigmenty r&#281;cznie i przelicz ponownie.
+    </div>` : '';
+
+  c.innerHTML = `
+    ${warningBanner}
+    <div class="res-product">${d.product_name} · ${d.base.replace(/[-_]/g,' ')} · ${d.commercial_vol_l} L × ${d.quantity} szt.</div>
+    ${currentColour.name || currentColour.code ? `<div style="display:inline-block;background:#f0f4ff;border:1px solid #c5d0e8;border-radius:6px;padding:4px 10px;margin-bottom:8px;font-size:13px;color:#2a3a6a">
+      🎨 Kolor: <strong>${[currentColour.code, currentColour.name].filter(Boolean).join(' · ')}</strong>
+    </div>` : ''}
+    <div class="res-meta">Marża ${d.margin_pct}% &nbsp;·&nbsp; VAT ${d.vat_pct}% &nbsp;·&nbsp; EUR ${d.euro_rate} PLN</div>
+
+    <table class="inv-table" style="margin-bottom:0">
+      <thead><tr>
+        <th>Lp</th>
+        <th>Nazwa towaru</th>
+        <th style="text-align:right">Ilość</th>
+        <th style="text-align:center">Jm</th>
+        <th style="text-align:right">Cena netto</th>
+        <th style="text-align:right">Wartość netto</th>
+        <th style="text-align:right">Wartość brutto</th>
+      </tr></thead>
+      <tbody>
+        ${lines}
+        <tr style="background:#fafaf8;font-weight:700;border-top:2px solid var(--border2)">
+          <td colspan="5" style="text-align:right;color:var(--ink2);font-size:11px;text-transform:uppercase;letter-spacing:1px">Razem</td>
+          <td class="num">${fmt(totalNet)} PLN</td>
+          <td class="num" style="color:var(--ink)">${fmt(totalGross)} PLN</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+      <div class="margin-pill">↑ Marża: <strong>${fmt(d.summary.margin_amount)} PLN</strong> &nbsp;·&nbsp; <strong>${(d.summary.margin_amount / d.summary.total_net * 100).toFixed(1)}%</strong></div>
+      <div class="margin-pill" style="background:var(--acc-bg);border-color:var(--acc-border);color:#7a6010">
+        Koszt zakupu: <strong>${fmt(d.purchase.total_pln * d.quantity)} PLN</strong>
+      </div>
+    </div>
+  `;
+}
+
+function showError(msg) {
+  document.getElementById('result-empty').style.display = 'none';
+  const c = document.getElementById('result-content');
+  c.style.display = '';
+  c.innerHTML = `<div class="err">⚠&nbsp; ${msg}</div>`;
+}
+
+init();
+</script>
+</body>
+</html>
