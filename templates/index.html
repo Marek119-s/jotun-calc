@@ -734,8 +734,9 @@ function autofillFromOCR(data) {
   if (prod) {
     document.getElementById('sel-product').value = prod.key;
     onProductChange();
-    setTimeout(() => {
-      // Tłumacz aliasy baz z OCR na klucze JSON
+
+    // Ustaw bazę po załadowaniu opcji
+    function setBaseFromOCR() {
       const BASE_MAP = {
         'GUL':'GUL','OXIDE YELLOW':'GUL','OXIDEYELLOW':'GUL',
         'KLAR':'KLAR','CLEAR':'KLAR','TRANSPAR':'KLAR','TRANSPAR.':'KLAR','TRANSPARENT':'KLAR',
@@ -743,16 +744,22 @@ function autofillFromOCR(data) {
         'HVIT':'HVIT','VIT':'HVIT','WHITE':'HVIT',
         'A':'A','B':'B','C':'C'
       };
-      const rawHint = data.base.toUpperCase().replace(/[-_]/g,' ').trim();
+      const rawHint = (data.base || '').toUpperCase().replace(/[-_]/g,' ').trim();
+      if (!rawHint) return;
       const hint = BASE_MAP[rawHint] || rawHint;
       const selBase = document.getElementById('sel-base');
+      let matched = false;
       for (const opt of selBase.options) {
-        const norm = opt.value.toUpperCase().replace(/[-_]/g,' ').replace(' BAS','').replace(' BASE','').trim();
-        if (norm === hint || norm.startsWith(hint+' ') || norm.includes(hint) || hint.includes(norm)) {
-          selBase.value = opt.value; onBaseChange(); break;
+        if (!opt.value) continue;
+        const norm = opt.value.toUpperCase().replace(/[-_]/g,' ').replace(/ BAS$/, '').replace(/ BASE$/, '').trim();
+        if (norm === hint || norm === hint + ' BASE' || norm.startsWith(hint)) {
+          selBase.value = opt.value; onBaseChange(); matched = true; break;
         }
       }
-    }, 300);
+      // Jeśli nie znalazł od razu, spróbuj jeszcze raz po chwili
+      if (!matched) setTimeout(setBaseFromOCR, 200);
+    }
+    setTimeout(setBaseFromOCR, 300);
   }
   pigments = data.formula.map(f => ({code: f.code.toUpperCase(), units: f.units}));
   renderPigments();
