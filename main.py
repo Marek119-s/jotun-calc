@@ -97,7 +97,10 @@ JSON only, no explanation:
     )
     raw = resp.choices[0].message.content.strip()
     raw = re.sub(r'^```json|```$', '', raw, flags=re.MULTILINE).strip()
-    return json.loads(raw)
+    parsed = json.loads(raw)
+    if isinstance(parsed, list):
+        parsed = parsed[0]
+    return parsed
 
 
 def normalize(s):
@@ -119,6 +122,7 @@ BASE_ALIASES = {
     "OXIDE YELLOW": "GUL", "OXIDEYELLOW": "GUL", "OX": "GUL",
     "HVIT":         "HVIT", "VIT": "HVIT", "WHITE": "HVIT",
     "KLAR":         "KLAR", "CLEAR": "KLAR", "TRANSPAR": "KLAR", "TRANSPAR.": "KLAR", "TRANSPARENT": "KLAR",
+    "GELB":         "GUL", "YELLOW": "GUL", "GEEL": "GUL",
     "A":            "A",    "B": "B", "C": "C",
 }
 
