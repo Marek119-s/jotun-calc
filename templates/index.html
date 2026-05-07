@@ -752,7 +752,7 @@ function autofillFromOCR(data) {
           selBase.value = opt.value; onBaseChange(); break;
         }
       }
-    }, 60);
+    }, 300);
   }
   pigments = data.formula.map(f => ({code: f.code.toUpperCase(), units: f.units}));
   renderPigments();
