@@ -55,12 +55,17 @@ The screen shows a product list with columns in this order:
 Example row:
   OXIDE YELLOW | DEMIDEKK TERRASSLASYR | RB012 SS028 | Exterior
 
-BASE NAME is the tinting base — it can be a colour name like "OXIDE YELLOW", "GELB", "HVIT", "KLAR" etc.
-PRODUCT NAME is the paint product name like "DEMIDEKK TERRASSLASYR", "TREBITT HOLZLASUR" etc.
-FORMULA is a list of pigment codes with amounts.
+The product row has exactly 4 columns:
+  Column 1 - BASE: tinting base name. Known values: GELB, OXIDE YELLOW, HVIT, KLAR, TRANSPAR., A, B, C
+  Column 2 - PRODUCT NAME: paint name like "TREBITT HOLZLASUR", "DEMIDEKK TERRASSLASYR", "DEMIDEKK CLEANTECH"
+  Column 3 - FORMULA: pigment codes with amounts like "FS026 RB016" or "RB012 SS028"
+  Column 4 - APPLICATION: "Exterior" or "Interior"
 
-IMPORTANT: "JOTUN STANDARD" is a colour collection name — it is NEVER a product name. Ignore it.
-The colour number (e.g. "0675") and colour name (e.g. "SETERBRUN") are in a separate row above the product row — use them only for colour_name and colour_code fields.
+IMPORTANT rules:
+- "JOTUN STANDARD", "TREBITT Holzlasur" in the colour row above are NEVER the product name or base — ignore them.
+- The colour row above contains: [colour number] [colour name] [collection name] — use only for colour_name and colour_code.
+- Column 1 of the PRODUCT row is always the BASE (e.g. GELB, KLAR, HVIT).
+- Column 2 of the PRODUCT row is always the PRODUCT NAME.
 
 Formula format — whole numbers, 2-letter code + 3 digits:
   RB012 = code RB, units 12
