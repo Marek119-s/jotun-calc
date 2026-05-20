@@ -31,6 +31,10 @@ def validate_formula(raw_formula):
         code      = str(item.get("code", "")).upper().strip()
         units_raw = str(item.get("units", "")).strip()
         units_fixed = fix_ocr_number(units_raw)
+        # Obsłuż format "000.5" (wiodące zera przed przecinkiem) → 0.5
+        units_fixed = units_fixed.lstrip('0') or '0'
+        if units_fixed.startswith('.'):
+            units_fixed = '0' + units_fixed
         try:
             units = float(units_fixed)
         except ValueError:
@@ -75,6 +79,9 @@ Formula format — whole numbers, 2-letter code + 3 digits:
 ALSO handle mixing machine format with decimals if present:
   HT003.7 = code HT, units 3.7
   RB040.3 = code RB, units 40.3
+  OK000.5 = code OK, units 0.5  ← leading zeros before decimal: strip them, keep the decimal part
+
+CRITICAL: For values like OK000.5, the numeric part is 000.5 which equals 0.5. NEVER return 0 for such values — always parse the full decimal number including the part after the dot.
 
 VALID pigment codes — ONLY these 2-letter codes:
 BD, BS, BV, FS, GE, GI, GO, GS, GV, HT, OK, RS, RB, RE, SS, SV, DE, MK, OX
@@ -129,7 +136,7 @@ def find_product(product_name):
 BASE_ALIASES = {
     "OXIDE YELLOW": "GUL", "OXIDEYELLOW": "GUL", "OX": "GUL",
     "HVIT":         "HVIT", "VIT": "HVIT", "WHITE": "HVIT",
-    "KLAR":         "KLAR", "CLEAR": "KLAR", "TRANSPAR": "KLAR", "TRANSPAR.": "KLAR", "TRANSPARENT": "KLAR",
+    "KLAR":         "C", "CLEAR": "C", "TRANSPAR": "C", "TRANSPAR.": "C", "TRANSPARENT": "C",
     "GELB":         "GUL", "YELLOW": "GUL", "GEEL": "GUL",
     "A":            "A",    "B": "B", "C": "C",
 }
@@ -140,12 +147,20 @@ def find_base(prod, base_hint):
     hint_up = BASE_ALIASES.get(hint_up, hint_up)
 
     hint_norm = normalize(hint_up)
-    for bkey, bdata in prod.get("bases", {}).items():
+    bases = prod.get("bases", {})
+    for bkey, bdata in bases.items():
         bkey_norm = normalize(bkey)
         if hint_norm == bkey_norm or hint_norm in bkey_norm:
             return bkey, bdata
         if re.match(r'^[A-Z]$', hint_up) and bkey_norm.startswith(hint_up + ' '):
             return bkey, bdata
+
+    # Fallback: jeśli produkt ma tylko jedną bazę (np. PANELLAKK → C-BAS),
+    # użyj jej automatycznie zamiast zwracać błąd.
+    if len(bases) == 1:
+        only_key = next(iter(bases))
+        return only_key, bases[only_key]
+
     return None, None
 
 
